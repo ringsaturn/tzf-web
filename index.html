@@ -1,9 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tzf-web</title>
+    <style>
+        body {
+            background-color: #d0f0c0;
+            font-family: Monaco, Menlo, "Courier New", Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        h1, div, button, p, footer {
+            text-align: center;
+        }
+    </style>
     <script type="module">
         import init, { WasmFinder } from './pkg/tzf_web.js';
 
@@ -14,12 +30,22 @@
             finder = new WasmFinder();
         }
 
-        window.getTimezone = async function() {
+        window.getTimezone = async function () {
             const lng = parseFloat(document.getElementById('lng').value);
             const lat = parseFloat(document.getElementById('lat').value);
 
             if (isNaN(lng) || isNaN(lat)) {
                 alert("Please enter valid numbers for longitude and latitude.");
+                return;
+            }
+
+            if (lng < -180 || lng > 180) {
+                alert("Please enter a valid longitude between -180 and 180 degrees.");
+                return;
+            }
+
+            if (lat < -90 || lat > 90) {
+                alert("Please enter a valid latitude between -90 and 90 degrees.");
                 return;
             }
 
@@ -34,6 +60,7 @@
         loadWasm();
     </script>
 </head>
+
 <body>
     <h1>tzf web</h1>
     <div>
@@ -45,6 +72,14 @@
         <input type="text" id="lat" placeholder="Enter latitude">
     </div>
     <button onclick="getTimezone()">Get Timezone</button>
-    <p id="result"></p>
+    <div id="result" style="border: 2px solid #000; padding: 10px; background-color: #f0e68c; margin-top: 20px;"></div>
+
+    <br>
+    <br>
+
+    <footer>
+        <p>View the repository on <a href="https://github.com/ringsaturn/tzf-web" target="_blank">GitHub</a>.</p>
+    </footer>
 </body>
+
 </html>
