@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>tzf-web</title>
+    <meta name="author" content="ringsaturn" />
+    <meta name="keywords" content="tzf, timezone, wasm, leaflet, protomaps" />
+    <meta
+      name="description"
+      content="A simple web app to find the timezone of a location using WebAssembly."
+    />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -81,10 +87,10 @@
     <div id="coordinate-inputs">
       <label for="latitude">Lat:</label>
       <input type="text" id="latitude" name="latitude" />
-      <br>
+      <br />
       <label for="longitude">Lng:</label>
       <input type="text" id="longitude" name="longitude" />
-      <br>
+      <br />
       <button id="add-marker">Add Marker</button>
     </div>
     <span
@@ -110,6 +116,22 @@
         theme: "white",
       });
       layer.addTo(map);
+
+      L.GridLayer.GridDebug = L.GridLayer.extend({
+        createTile: function (coords) {
+          const tile = document.createElement("div");
+          tile.style.outline = "1px solid rgba(208, 240, 192, 1)";
+          tile.style.fontSize = "13pt";
+          tile.style.opacity = "1"; // Added 50% opacity
+          tile.innerHTML = [coords.z, coords.x, coords.y].join("/");
+          return tile;
+        },
+      });
+      L.gridLayer.gridDebug = function (opts) {
+        return new L.GridLayer.GridDebug(opts);
+      };
+
+      map.addLayer(L.gridLayer.gridDebug());
 
       // Event listener for the button
       document.getElementById("add-marker").addEventListener("click", () => {
