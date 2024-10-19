@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: ["main"]
 
-env:
-  CARGO_TERM_COLOR: always
-
 permissions:
   contents: write
   deployments: write
@@ -27,12 +24,8 @@ jobs:
           comment_on_pr: false
 
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - uses: jetli/wasm-pack-action@v0.4.0
-        with:
-          version: "latest"
-      - run: |
-          make artifact
+
+      - run: make artifact
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
