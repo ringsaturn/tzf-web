@@ -12,15 +12,21 @@
     />
 
     <style>
-      /* 统一配色方案 */
       :root {
-        --primary-bg: #d0f0c0;      /* 主背景颜色：浅绿 */
-        --primary-color: #333;      /* 主字体颜色：深灰 */
-        --button-bg: #4caf50;       /* 按钮背景颜色：绿色 */
-        --button-bg-hover: #388e3c; /* 按钮悬停颜色：深绿 */
-        --input-border: #8bc34a;    /* 输入框边框颜色：浅绿 */
-        --result-bg: #a5d6a7;       /* 结果框背景颜色：浅绿变种 */
-        --link-color: #2e7d32;      /* 链接颜色：深绿 */
+        --primary-bg: #f8d7da;
+        /* 主背景颜色：嫩粉色 */
+        --primary-color: #333;
+        /* 主字体颜色：深灰 */
+        --button-bg: #e57373;
+        /* 按钮背景颜色：粉红 */
+        --button-bg-hover: #d32f2f;
+        /* 按钮悬停颜色：深粉红 */
+        --input-border: #f48fb1;
+        /* 输入框边框颜色：浅粉 */
+        --result-bg: #fce4ec;
+        /* 结果框背景颜色：淡粉 */
+        --link-color: #c2185b;
+        /* 链接颜色：深粉 */
       }
 
       body {
@@ -35,23 +41,28 @@
         flex-direction: column;
         padding: 20px;
       }
+
       h1 {
         margin-bottom: 20px;
         font-size: 2em;
       }
+
       div {
         margin: 10px 0;
       }
+
       label {
         margin-right: 10px;
         font-weight: bold;
       }
+
       input {
         padding: 8px;
         border: 1px solid var(--input-border);
         border-radius: 4px;
         margin-top: 5px;
       }
+
       button {
         margin-top: 20px;
         padding: 10px 20px;
@@ -63,9 +74,11 @@
         cursor: pointer;
         transition: background-color 0.3s;
       }
+
       button:hover {
         background-color: var(--button-bg-hover);
       }
+
       #result {
         border: 1px solid var(--input-border);
         padding: 15px;
@@ -76,17 +89,21 @@
         border-radius: 5px;
         font-weight: bold;
       }
+
       footer {
         margin-top: 30px;
       }
+
       footer p {
         margin: 0;
         font-size: 0.9em;
       }
+
       footer a {
         color: var(--link-color);
         text-decoration: none;
       }
+
       footer a:hover {
         text-decoration: underline;
       }
