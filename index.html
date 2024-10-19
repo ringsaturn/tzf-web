@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"></script>
 
     <script type="module">
         import init, { WasmFinder } from './pkg/tzf_web.js';
@@ -68,12 +69,19 @@
             maxZoom: 18,
             minZoom: 3,
             cursor: true,
-        }).setView([40.7128, -74.0060], 2);
+        }).setView([40.7128, -74.0060], 5);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+
+        var layer = protomapsL.leafletLayer({
+            url: 'https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1',
+            theme: "white",
+        })
+        layer.addTo(map);
+
+        // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        //     attribution: '© OpenStreetMap'
+        // }).addTo(map);
 
         map.on("mousemove", function (e) {
             var lng = e.latlng.wrap().lng.toFixed(4);
