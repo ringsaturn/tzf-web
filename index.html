@@ -24,6 +24,21 @@
 
         window.showTimezone = function (lat, lng, map) {
             if (finder) {
+                if (isNaN(lng) || isNaN(lat)) {
+                    alert("Please enter valid numbers for longitude and latitude.");
+                    return;
+                }
+
+                if (lng < -180 || lng > 180) {
+                    alert("Please enter a valid longitude between -180 and 180 degrees.");
+                    return;
+                }
+
+                if (lat < -90 || lat > 90) {
+                    alert("Please enter a valid latitude between -90 and 90 degrees.");
+                    return;
+                }
+
                 const roundedLat = lat.toFixed(4);
                 const roundedLng = lng.toFixed(4);
                 const timezone = finder.get_tz(roundedLng, roundedLat);
@@ -45,11 +60,28 @@
             margin: 0;
             padding: 0;
         }
+
+        #coordinate-inputs {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
+    <div id="coordinate-inputs">
+        <label for="latitude">Lat:</label>
+        <input type="text" id="latitude" name="latitude">
+        <label for="longitude">Lon:</label>
+        <input type="text" id="longitude" name="longitude">
+        <button id="add-marker">Add Marker</button>
+    </div>
     <span id="mousecoord" style="
         display: block;
         position: absolute;
@@ -69,7 +101,7 @@
             maxZoom: 18,
             minZoom: 3,
             cursor: true,
-        }).setView([40.7128, -74.0060], 5);
+        }).setView([40.7128, -74.0060], 2);
 
 
         var layer = protomapsL.leafletLayer({
@@ -78,10 +110,16 @@
         })
         layer.addTo(map);
 
-        // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //     maxZoom: 19,
-        //     attribution: '© OpenStreetMap'
-        // }).addTo(map);
+        // Event listener for the button
+        document.getElementById('add-marker').addEventListener('click', () => {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            if (!isNaN(lat) && !isNaN(lon)) {
+                showTimezone(lat, lon, map);
+            } else {
+                alert('Please enter valid latitude and longitude values.');
+            }
+        });
 
         map.on("mousemove", function (e) {
             var lng = e.latlng.wrap().lng.toFixed(4);
