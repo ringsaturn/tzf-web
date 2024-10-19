@@ -28,7 +28,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
       - run: |
           cargo install wasm-pack
-          wasm-pack build --target web
+          make artifact
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
