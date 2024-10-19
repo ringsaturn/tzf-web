@@ -28,13 +28,13 @@ jobs:
           cargo install wasm-pack
           wasm-pack build --target web
 
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v3
-      #   if: ${{ github.ref_name == 'main' }}
-      #   with:
-      #     path: "./dist"
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        if: ${{ github.ref_name == 'main' }}
+        with:
+          path: "./dist"
 
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   if: ${{ github.ref_name == 'main' }}
-      #   uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: ${{ github.ref_name == 'main' }}
+        uses: actions/deploy-pages@v4
