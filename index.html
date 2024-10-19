@@ -1,140 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>tzf-web</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"></script>
+    <script
+      src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"
+    ></script>
 
     <script type="module">
-        import init, { WasmFinder } from 'https://www.unpkg.com/tzf-wasm/tzf_wasm.js';
+      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
 
-        let finder;
+      let finder;
 
-        async function loadWasm() {
-            await init();
-            finder = new WasmFinder();
+      async function loadWasm() {
+        await init();
+        finder = new WasmFinder();
+      }
+
+      loadWasm();
+
+      window.showTimezone = function (lat, lng, map) {
+        if (finder) {
+          if (isNaN(lng) || isNaN(lat)) {
+            alert("Please enter valid numbers for longitude and latitude.");
+            return;
+          }
+
+          if (lng < -180 || lng > 180) {
+            alert("Please enter a valid longitude between -180 and 180 degrees.");
+            return;
+          }
+
+          if (lat < -90 || lat > 90) {
+            alert("Please enter a valid latitude between -90 and 90 degrees.");
+            return;
+          }
+
+          const roundedLat = lat.toFixed(4);
+          const roundedLng = lng.toFixed(4);
+          const timezone = finder.get_tz(roundedLng, roundedLat);
+
+          const marker = L.marker([roundedLat, roundedLng]).addTo(map);
+
+          marker.bindPopup(
+            `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${timezone}`,
+          ).openPopup();
+        } else {
+          alert("WASM module is not loaded yet.");
         }
-
-        loadWasm();
-
-        window.showTimezone = function (lat, lng, map) {
-            if (finder) {
-                if (isNaN(lng) || isNaN(lat)) {
-                    alert("Please enter valid numbers for longitude and latitude.");
-                    return;
-                }
-
-                if (lng < -180 || lng > 180) {
-                    alert("Please enter a valid longitude between -180 and 180 degrees.");
-                    return;
-                }
-
-                if (lat < -90 || lat > 90) {
-                    alert("Please enter a valid latitude between -90 and 90 degrees.");
-                    return;
-                }
-
-                const roundedLat = lat.toFixed(4);
-                const roundedLng = lng.toFixed(4);
-                const timezone = finder.get_tz(roundedLng, roundedLat);
-
-                const marker = L.marker([roundedLat, roundedLng]).addTo(map);
-
-                marker.bindPopup(`Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${timezone}`).openPopup();
-            } else {
-                alert("WASM module is not loaded yet.");
-            }
-        };
+      };
     </script>
 
     <style>
-        html,
-        body,
-        #map {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
+      html,
+      body,
+      #map {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-        #coordinate-inputs {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: white;
-            padding: 10px;
-            border: 1px solid #ccc;
-            z-index: 1000;
-        }
+      #coordinate-inputs {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        z-index: 1000;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="map"></div>
     <div id="coordinate-inputs">
-        <label for="latitude">Lat:</label>
-        <input type="text" id="latitude" name="latitude">
-        <label for="longitude">Lon:</label>
-        <input type="text" id="longitude" name="longitude">
-        <button id="add-marker">Add Marker</button>
+      <label for="latitude">Lat:</label>
+      <input type="text" id="latitude" name="latitude" />
+      <label for="longitude">Lon:</label>
+      <input type="text" id="longitude" name="longitude" />
+      <button id="add-marker">Add Marker</button>
     </div>
-    <span id="mousecoord" style="
-        display: block;
-        position: absolute;
-        right: 0;
-        top: 0;
-        z-index: 9999;
-        background-color: white;
-      "></span>
+    <span
+      id="mousecoord"
+      style="display: block; position: absolute; right: 0; top: 0; z-index: 9999; background-color: white"
+    ></span>
     <script>
-        var southWest = L.latLng(-90, -180);
-        var northEast = L.latLng(90, 180);
-        var bounds = L.latLngBounds(southWest, northEast);
-        var map = L.map("map", {
-            maxBounds: bounds,
-            maxBoundsViscosity: 1,
-            worldCopyJump: true,
-            maxZoom: 18,
-            minZoom: 3,
-            cursor: true,
-        }).setView([40.7128, -74.0060], 2);
+      var southWest = L.latLng(-90, -180);
+      var northEast = L.latLng(90, 180);
+      var bounds = L.latLngBounds(southWest, northEast);
+      var map = L.map("map", {
+        maxBounds: bounds,
+        maxBoundsViscosity: 1,
+        worldCopyJump: true,
+        maxZoom: 18,
+        minZoom: 3,
+        cursor: true,
+      }).setView([40.7128, -74.0060], 2);
 
+      var layer = protomapsL.leafletLayer({
+        url:
+          "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
+        theme: "white",
+      });
+      layer.addTo(map);
 
-        var layer = protomapsL.leafletLayer({
-            url: 'https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1',
-            theme: "white",
-        })
-        layer.addTo(map);
+      // Event listener for the button
+      document.getElementById("add-marker").addEventListener("click", () => {
+        const lat = parseFloat(document.getElementById("latitude").value);
+        const lon = parseFloat(document.getElementById("longitude").value);
+        if (!isNaN(lat) && !isNaN(lon)) {
+          showTimezone(lat, lon, map);
+        } else {
+          alert("Please enter valid latitude and longitude values.");
+        }
+      });
 
-        // Event listener for the button
-        document.getElementById('add-marker').addEventListener('click', () => {
-            const lat = parseFloat(document.getElementById('latitude').value);
-            const lon = parseFloat(document.getElementById('longitude').value);
-            if (!isNaN(lat) && !isNaN(lon)) {
-                showTimezone(lat, lon, map);
-            } else {
-                alert('Please enter valid latitude and longitude values.');
-            }
-        });
+      map.on("mousemove", function (e) {
+        var lng = e.latlng.wrap().lng.toFixed(4);
+        var lat = e.latlng.wrap().lat.toFixed(4);
+        document.getElementById(
+          "mousecoord",
+        ).innerHTML = `Lat: ${lat} Lng: ${lng}`;
+      });
 
-        map.on("mousemove", function (e) {
-            var lng = e.latlng.wrap().lng.toFixed(4);
-            var lat = e.latlng.wrap().lat.toFixed(4);
-            document.getElementById(
-                "mousecoord"
-            ).innerHTML = `Lat: ${lat} Lng: ${lng}`;
-        });
-
-        map.on('click', function (e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            showTimezone(lat, lng, map);
-        });
+      map.on("click", function (e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        showTimezone(lat, lng, map);
+      });
     </script>
-</body>
-
+  </body>
 </html>
