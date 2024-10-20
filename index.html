@@ -189,9 +189,10 @@
           // var timezone = finder.get_tz_name(lng, lat);
           var timezones = finder.get_tz_names(lng, lat);
           var joinedTimezones = timezones.join(", ");
+          var dataVersion = finder.data_version();
           document.getElementById(
             "mousecoord",
-          ).innerHTML = `Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
+          ).innerHTML = `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
         } else {
           document.getElementById(
             "mousecoord",
