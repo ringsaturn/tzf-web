@@ -50,7 +50,7 @@
     ></script>
 
     <script type="module">
-      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
+      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm@0.1.4/tzf_wasm.js";
 
       window.finder = null;
 
@@ -81,7 +81,7 @@
 
           const roundedLat = lat.toFixed(4);
           const roundedLng = lng.toFixed(4);
-          const timezone = finder.get_tz(roundedLng, roundedLat);
+          const timezone = finder.get_tz_name(roundedLng, roundedLat);
 
           const marker = L.marker([roundedLat, roundedLng]).addTo(map);
 
@@ -185,7 +185,7 @@
         var lng = e.latlng.wrap().lng.toFixed(4);
         var lat = e.latlng.wrap().lat.toFixed(4);
         if (finder) {
-          var timezone = finder.get_tz(lng, lat);
+          var timezone = finder.get_tz_name(lng, lat);
           document.getElementById(
             "mousecoord",
           ).innerHTML = `Lat: ${lat} Lng: ${lng}<br>Timezone: ${timezone}`;

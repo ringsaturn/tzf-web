@@ -110,7 +110,7 @@
     </style>
 
     <script type="module">
-      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
+      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm@0.1.4/tzf_wasm.js";
 
       let finder;
 
@@ -139,7 +139,7 @@
         }
 
         if (finder) {
-          const timezone = finder.get_tz(lng, lat);
+          const timezone = finder.get_tz_name(lng, lat);
           document.getElementById("result").innerText = `Timezone: ${timezone}`;
         } else {
           alert("WASM module is not loaded yet.");
