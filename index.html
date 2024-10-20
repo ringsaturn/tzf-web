@@ -50,7 +50,8 @@
     ></script>
 
     <script type="module">
-      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
+      // import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
+      import init, { WasmFinder } from "./pkg/tzf_web.js";
 
       window.finder = null;
 
@@ -149,6 +150,12 @@
         theme: "light",
       });
       layer.addTo(map);
+
+      var tzlayer = protomapsL.leafletLayer({
+        url: "./combined-with-oceans.pmtiles",
+        theme: "black",
+      });
+      tzlayer.addTo(map);
 
       map.attributionControl.addAttribution(
         '&copy; <a href="https://github.com/evansiroky/timezone-boundary-builder" target="_blank">timezone-boundary-builder</a>',
