@@ -1,3 +1,6 @@
+fmt:
+	@deno fmt --ignore=dist
+
 artifact:
 	@mkdir -p dist
 	@cp *.html dist/

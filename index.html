@@ -52,7 +52,7 @@
     <script type="module">
       import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm/tzf_wasm.js";
 
-      let finder;
+      window.finder = null;
 
       async function loadWasm() {
         await init();
@@ -60,6 +60,7 @@
       }
 
       loadWasm();
+      window.finder = finder;
 
       window.showTimezone = function (lat, lng, map) {
         if (finder) {
@@ -179,9 +180,16 @@
       map.on("mousemove", function (e) {
         var lng = e.latlng.wrap().lng.toFixed(4);
         var lat = e.latlng.wrap().lat.toFixed(4);
-        document.getElementById(
-          "mousecoord",
-        ).innerHTML = `Lat: ${lat} Lng: ${lng}`;
+        if (finder) {
+          var timezone = finder.get_tz(lng, lat);
+          document.getElementById(
+            "mousecoord",
+          ).innerHTML = `Lat: ${lat} Lng: ${lng}<br>Timezone: ${timezone}`;
+        } else {
+          document.getElementById(
+            "mousecoord",
+          ).innerHTML = `Lat: ${lat} Lng: ${lng}`;
+        }
       });
 
       map.on("click", function (e) {
