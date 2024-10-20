@@ -146,9 +146,13 @@
       var layer = protomapsL.leafletLayer({
         url:
           "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
-        theme: "white",
+        theme: "light",
       });
       layer.addTo(map);
+
+      map.attributionControl.addAttribution(
+        '&copy; <a href="https://github.com/evansiroky/timezone-boundary-builder" target="_blank">timezone-boundary-builder</a>',
+      );
 
       L.GridLayer.GridDebug = L.GridLayer.extend({
         createTile: function (coords) {
