@@ -139,8 +139,9 @@
         }
 
         if (finder) {
-          const timezone = finder.get_tz_name(lng, lat);
-          document.getElementById("result").innerText = `Timezone: ${timezone}`;
+          var timezones = finder.get_tz_names(lng, lat);
+          var joined = timezones.join(", ");
+          document.getElementById("result").innerText = `Timezone: ${joined}`;
         } else {
           alert("WASM module is not loaded yet.");
         }
