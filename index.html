@@ -81,12 +81,13 @@
 
           const roundedLat = lat.toFixed(4);
           const roundedLng = lng.toFixed(4);
-          const timezone = finder.get_tz_name(roundedLng, roundedLat);
+          const timezone = finder.get_tz_names(roundedLng, roundedLat);
+          var joinedTimezones = timezone.join(", ");
 
           const marker = L.marker([roundedLat, roundedLng]).addTo(map);
 
           marker.bindPopup(
-            `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${timezone}`,
+            `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${joinedTimezones}`,
           ).openPopup();
         } else {
           alert("WASM module is not loaded yet. Please Wait for seconds.");
@@ -185,10 +186,12 @@
         var lng = e.latlng.wrap().lng.toFixed(4);
         var lat = e.latlng.wrap().lat.toFixed(4);
         if (finder) {
-          var timezone = finder.get_tz_name(lng, lat);
+          // var timezone = finder.get_tz_name(lng, lat);
+          var timezones = finder.get_tz_names(lng, lat);
+          var joinedTimezones = timezones.join(", ");
           document.getElementById(
             "mousecoord",
-          ).innerHTML = `Lat: ${lat} Lng: ${lng}<br>Timezone: ${timezone}`;
+          ).innerHTML = `Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
         } else {
           document.getElementById(
             "mousecoord",
