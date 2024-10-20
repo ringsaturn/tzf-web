@@ -50,7 +50,9 @@
     ></script>
 
     <script type="module">
-      import init, { WasmFinder } from "https://www.unpkg.com/tzf-wasm@0.1.4/tzf_wasm.js";
+      import init, {
+        WasmFinder,
+      } from "https://www.unpkg.com/tzf-wasm@0.1.4/tzf_wasm.js";
 
       window.finder = null;
 
@@ -192,7 +194,8 @@
           var dataVersion = finder.data_version();
           document.getElementById(
             "mousecoord",
-          ).innerHTML = `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
+          ).innerHTML =
+            `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
         } else {
           document.getElementById(
             "mousecoord",
