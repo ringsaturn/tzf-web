@@ -55,6 +55,7 @@
       } from "https://www.unpkg.com/tzf-wasm@0.1.4/tzf_wasm.js";
 
       window.finder = null;
+      window.loadedTimezones = new Set(); // 记录已加载的时区
 
       async function loadWasm() {
         await init();
@@ -64,7 +65,7 @@
       loadWasm();
       window.finder = finder;
 
-      window.showTimezone = function (lat, lng, map) {
+      window.showTimezone = async function (lat, lng, map) {
         if (finder) {
           if (isNaN(lng) || isNaN(lat)) {
             alert("Please enter valid numbers for longitude and latitude.");
@@ -83,14 +84,50 @@
 
           const roundedLat = lat.toFixed(4);
           const roundedLng = lng.toFixed(4);
-          const timezone = finder.get_tz_names(roundedLng, roundedLat);
-          var joinedTimezones = timezone.join(", ");
+          const timezones = finder.get_tz_names(roundedLng, roundedLat);
+          var joinedTimezones = timezones.join(", ");
 
           const marker = L.marker([roundedLat, roundedLng]).addTo(map);
 
           marker.bindPopup(
             `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${joinedTimezones}`,
           ).openPopup();
+
+          for (const timezone of timezones) {
+            const geojsonPath = `/timezone-polygons/${
+              timezone.replace(/\//g, "-")
+            }.geojson`;
+            console.log(`Loading GeoJSON for ${timezone} from ${geojsonPath}`);
+
+            if (!window.loadedTimezones.has(timezone)) {
+              window.loadedTimezones.add(timezone);
+
+              try {
+                const response = await fetch(geojsonPath);
+                if (!response.ok) {
+                  console.error(
+                    `Failed to load GeoJSON for ${timezone}: ${response.statusText}`,
+                  );
+                  continue;
+                }
+
+                const geojsonData = await response.json();
+
+                const timezoneLayer = L.geoJSON(geojsonData, {
+                  style: {
+                    color: "blue",
+                    weight: 1,
+                    opacity: 0.2,
+                    fillOpacity: 0.4,
+                  },
+                }).addTo(map);
+
+                // map.fitBounds(timezoneLayer.getBounds()); // 自动调整视图到多边形范围
+              } catch (error) {
+                console.error(`Error loading GeoJSON for ${timezone}:`, error);
+              }
+            }
+          }
         } else {
           alert("WASM module is not loaded yet. Please Wait for seconds.");
         }
@@ -212,8 +249,7 @@
   </body>
 </html>
 <footer
-  style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 10px; border: 1px
-  solid #ccc; z-index: 1000"
+  style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 10px; border: 1px solid #ccc; z-index: 1000"
 >
   <ul>
     <li>
