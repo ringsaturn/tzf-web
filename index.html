@@ -94,7 +94,7 @@
           ).openPopup();
 
           for (const timezone of timezones) {
-            const geojsonPath = `/timezone-polygons/${
+            const geojsonPath = `./timezone-polygons/${
               timezone.replace(/\//g, "-")
             }.geojson`;
             console.log(`Loading GeoJSON for ${timezone} from ${geojsonPath}`);
