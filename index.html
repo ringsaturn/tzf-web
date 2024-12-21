@@ -112,11 +112,10 @@
                 }
 
                 const geojsonData = await response.json();
-
                 const timezoneLayer = L.geoJSON(geojsonData, {
                   style: {
                     color: "blue",
-                    weight: 1,
+                    weight: 5,
                     opacity: 0.2,
                     fillOpacity: 0.4,
                   },
