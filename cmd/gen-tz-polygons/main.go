@@ -22,6 +22,10 @@ func main() {
 		panic(err)
 	}
 
+	if err := os.MkdirAll(*outputDir, 0755); err != nil {
+		panic(err)
+	}
+
 	// Generate GeoJSON polygons
 	for _, tzItem := range input.Timezones {
 		feature := convert.RevertItem(tzItem)
