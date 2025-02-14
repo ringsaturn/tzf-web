@@ -68,17 +68,23 @@
       window.showTimezone = async function (lat, lng, map) {
         if (finder) {
           if (isNaN(lng) || isNaN(lat)) {
-            alert("Please enter valid numbers for longitude and latitude.");
+            alert(
+              "Please enter valid numbers for longitude and latitude.",
+            );
             return;
           }
 
           if (lng < -180 || lng > 180) {
-            alert("Please enter a valid longitude between -180 and 180 degrees.");
+            alert(
+              "Please enter a valid longitude between -180 and 180 degrees.",
+            );
             return;
           }
 
           if (lat < -90 || lat > 90) {
-            alert("Please enter a valid latitude between -90 and 90 degrees.");
+            alert(
+              "Please enter a valid latitude between -90 and 90 degrees.",
+            );
             return;
           }
 
@@ -95,12 +101,20 @@
 
           for (const timezone of timezones) {
             // 加载详细的时区边界
-            const geojsonPath = `./timezone-polygons/${timezone.replace(/\//g, "-")}.geojson`;
+            const geojsonPath = `./timezone-polygons/${
+              timezone.replace(/\//g, "-")
+            }.geojson`;
             // 加载索引文件
-            const indexGeojsonPath = `./timezone-polygons-index/${timezone.replace(/\//g, "-")}.geojson`;
-            
-            console.log(`Loading GeoJSON for ${timezone} from ${geojsonPath}`);
-            console.log(`Loading index GeoJSON for ${timezone} from ${indexGeojsonPath}`);
+            const indexGeojsonPath = `./timezone-polygons-index/${
+              timezone.replace(/\//g, "-")
+            }.geojson`;
+
+            console.log(
+              `Loading GeoJSON for ${timezone} from ${geojsonPath}`,
+            );
+            console.log(
+              `Loading index GeoJSON for ${timezone} from ${indexGeojsonPath}`,
+            );
 
             if (!window.loadedTimezones.has(timezone)) {
               window.loadedTimezones.add(timezone);
@@ -112,10 +126,10 @@
                   const geojsonData = await response.json();
                   const timezoneLayer = L.geoJSON(geojsonData, {
                     style: {
-                      color: "#1a365d",  // 更深的海军蓝
+                      color: "#1a365d", // 更深的海军蓝
                       weight: 3,
-                      opacity: 0.6,      // 提高不透明度
-                      fillOpacity: 0.2,  // 提高填充不透明度
+                      opacity: 0.6, // 提高不透明度
+                      fillOpacity: 0.2, // 提高填充不透明度
                     },
                   }).addTo(map);
                 }
@@ -124,22 +138,30 @@
                 const indexResponse = await fetch(indexGeojsonPath);
                 if (indexResponse.ok) {
                   const indexGeojsonData = await indexResponse.json();
-                  const indexTimezoneLayer = L.geoJSON(indexGeojsonData, {
-                    style: {
-                      color: "#9b2c2c",  // 更深的红褐色
-                      weight: 1,
-                      opacity: 0.6,      // 提高不透明度
-                      fillOpacity: 0.2,  // 提高填充不透明度
+                  const indexTimezoneLayer = L.geoJSON(
+                    indexGeojsonData,
+                    {
+                      style: {
+                        color: "#9b2c2c", // 更深的红褐色
+                        weight: 1,
+                        opacity: 0.6, // 提高不透明度
+                        fillOpacity: 0.2, // 提高填充不透明度
+                      },
                     },
-                  }).addTo(map);
+                  ).addTo(map);
                 }
               } catch (error) {
-                console.error(`Error loading GeoJSON for ${timezone}:`, error);
+                console.error(
+                  `Error loading GeoJSON for ${timezone}:`,
+                  error,
+                );
               }
             }
           }
         } else {
-          alert("WASM module is not loaded yet. Please Wait for seconds.");
+          alert(
+            "WASM module is not loaded yet. Please Wait for seconds.",
+          );
         }
       };
     </script>
@@ -221,15 +243,22 @@
       map.addLayer(L.gridLayer.gridDebug());
 
       // Event listener for the button
-      document.getElementById("add-marker").addEventListener("click", () => {
-        const lat = parseFloat(document.getElementById("latitude").value);
-        const lon = parseFloat(document.getElementById("longitude").value);
-        if (!isNaN(lat) && !isNaN(lon)) {
-          showTimezone(lat, lon, map);
-        } else {
-          alert("Please enter valid latitude and longitude values.");
-        }
-      });
+      document.getElementById("add-marker").addEventListener(
+        "click",
+        () => {
+          const lat = parseFloat(
+            document.getElementById("latitude").value,
+          );
+          const lon = parseFloat(
+            document.getElementById("longitude").value,
+          );
+          if (!isNaN(lat) && !isNaN(lon)) {
+            showTimezone(lat, lon, map);
+          } else {
+            alert("Please enter valid latitude and longitude values.");
+          }
+        },
+      );
 
       map.on("mousemove", function (e) {
         var lng = e.latlng.wrap().lng.toFixed(4);

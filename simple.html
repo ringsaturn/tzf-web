@@ -126,24 +126,31 @@
         const lat = parseFloat(document.getElementById("lat").value);
 
         if (isNaN(lng) || isNaN(lat)) {
-          alert("Please enter valid numbers for longitude and latitude.");
+          alert(
+            "Please enter valid numbers for longitude and latitude.",
+          );
           return;
         }
 
         if (lng < -180 || lng > 180) {
-          alert("Please enter a valid longitude between -180 and 180 degrees.");
+          alert(
+            "Please enter a valid longitude between -180 and 180 degrees.",
+          );
           return;
         }
 
         if (lat < -90 || lat > 90) {
-          alert("Please enter a valid latitude between -90 and 90 degrees.");
+          alert(
+            "Please enter a valid latitude between -90 and 90 degrees.",
+          );
           return;
         }
 
         if (finder) {
           var timezones = finder.get_tz_names(lng, lat);
           var joined = timezones.join(", ");
-          document.getElementById("result").innerText = `Timezone: ${joined}`;
+          document.getElementById("result").innerText =
+            `Timezone: ${joined}`;
         } else {
           alert("WASM module is not loaded yet.");
         }
