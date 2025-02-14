@@ -112,10 +112,10 @@
                   const geojsonData = await response.json();
                   const timezoneLayer = L.geoJSON(geojsonData, {
                     style: {
-                      color: "#2c5282",  // 更深的蓝色
+                      color: "#1a365d",  // 更深的海军蓝
                       weight: 3,
-                      opacity: 0.4,      // 略微提高不透明度
-                      fillOpacity: 0.15, // 略微提高填充不透明度
+                      opacity: 0.6,      // 提高不透明度
+                      fillOpacity: 0.2,  // 提高填充不透明度
                     },
                   }).addTo(map);
                 }
@@ -126,10 +126,10 @@
                   const indexGeojsonData = await indexResponse.json();
                   const indexTimezoneLayer = L.geoJSON(indexGeojsonData, {
                     style: {
-                      color: "#c53030",  // 更深的红色
+                      color: "#9b2c2c",  // 更深的红褐色
                       weight: 1,
-                      opacity: 0.4,      // 略微提高不透明度
-                      fillOpacity: 0.15, // 略微提高填充不透明度
+                      opacity: 0.6,      // 提高不透明度
+                      fillOpacity: 0.2,  // 提高填充不透明度
                     },
                   }).addTo(map);
                 }
