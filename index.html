@@ -94,34 +94,45 @@
           ).openPopup();
 
           for (const timezone of timezones) {
-            const geojsonPath = `./timezone-polygons/${
-              timezone.replace(/\//g, "-")
-            }.geojson`;
+            // 加载详细的时区边界
+            const geojsonPath = `./timezone-polygons/${timezone.replace(/\//g, "-")}.geojson`;
+            // 加载索引文件
+            const indexGeojsonPath = `./timezone-polygons-index/${timezone.replace(/\//g, "-")}.geojson`;
+            
             console.log(`Loading GeoJSON for ${timezone} from ${geojsonPath}`);
+            console.log(`Loading index GeoJSON for ${timezone} from ${indexGeojsonPath}`);
 
             if (!window.loadedTimezones.has(timezone)) {
               window.loadedTimezones.add(timezone);
 
               try {
+                // 加载详细边界
                 const response = await fetch(geojsonPath);
-                if (!response.ok) {
-                  console.error(
-                    `Failed to load GeoJSON for ${timezone}: ${response.statusText}`,
-                  );
-                  continue;
+                if (response.ok) {
+                  const geojsonData = await response.json();
+                  const timezoneLayer = L.geoJSON(geojsonData, {
+                    style: {
+                      color: "#2c5282",  // 更深的蓝色
+                      weight: 3,
+                      opacity: 0.4,      // 略微提高不透明度
+                      fillOpacity: 0.15, // 略微提高填充不透明度
+                    },
+                  }).addTo(map);
                 }
 
-                const geojsonData = await response.json();
-                const timezoneLayer = L.geoJSON(geojsonData, {
-                  style: {
-                    color: "blue",
-                    weight: 5,
-                    opacity: 0.2,
-                    fillOpacity: 0.4,
-                  },
-                }).addTo(map);
-
-                // map.fitBounds(timezoneLayer.getBounds()); // 自动调整视图到多边形范围
+                // 加载索引边界
+                const indexResponse = await fetch(indexGeojsonPath);
+                if (indexResponse.ok) {
+                  const indexGeojsonData = await indexResponse.json();
+                  const indexTimezoneLayer = L.geoJSON(indexGeojsonData, {
+                    style: {
+                      color: "#c53030",  // 更深的红色
+                      weight: 1,
+                      opacity: 0.4,      // 略微提高不透明度
+                      fillOpacity: 0.15, // 略微提高填充不透明度
+                    },
+                  }).addTo(map);
+                }
               } catch (error) {
                 console.error(`Error loading GeoJSON for ${timezone}:`, error);
               }
