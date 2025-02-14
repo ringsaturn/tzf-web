@@ -52,10 +52,43 @@
     <script type="module">
       import init, {
         WasmFinder,
-      } from "https://www.unpkg.com/tzf-wasm@0.1.5/tzf_wasm.js";
+      } from "https://unpkg.com/tzf-wasm@0.1.5/tzf_wasm.js";
+
+      // 定义一组视觉上区分度高的颜色
+      const colorPalette = [
+        "#2c5282", // 深蓝色
+        "#c53030", // 深红色
+        "#2f855a", // 深绿色
+        "#744210", // 深棕色
+        "#553c9a", // 深紫色
+        "#702459", // 深粉色
+        "#1a365d", // 海军蓝
+        "#975a16", // 赭石色
+        "#285e61", // 深青色
+        "#822727", // 暗红色
+        "#45359a", // 靛蓝色
+        "#5b3f11", // 深褐色
+        "#234e52", // 深绿青
+        "#48366d", // 深靛蓝
+        "#3c366b", // 深紫蓝
+      ];
 
       window.finder = null;
       window.loadedTimezones = new Set(); // 记录已加载的时区
+      window.timezoneColors = new Map(); // 存储时区和颜色的映射
+      let colorIndex = 0;
+
+      // 获取时区的颜色，确保相邻时区颜色不同
+      function getTimezoneColor(timezone) {
+        if (!window.timezoneColors.has(timezone)) {
+          window.timezoneColors.set(
+            timezone,
+            colorPalette[colorIndex % colorPalette.length],
+          );
+          colorIndex++;
+        }
+        return window.timezoneColors.get(timezone);
+      }
 
       async function loadWasm() {
         await init();
@@ -100,11 +133,9 @@
           ).openPopup();
 
           for (const timezone of timezones) {
-            // 加载详细的时区边界
             const geojsonPath = `./timezone-polygons/${
               timezone.replace(/\//g, "-")
             }.geojson`;
-            // 加载索引文件
             const indexGeojsonPath = `./timezone-polygons-index/${
               timezone.replace(/\//g, "-")
             }.geojson`;
@@ -124,12 +155,21 @@
                 const response = await fetch(geojsonPath);
                 if (response.ok) {
                   const geojsonData = await response.json();
+                  const timezoneColor = getTimezoneColor(timezone);
                   const timezoneLayer = L.geoJSON(geojsonData, {
                     style: {
-                      color: "#1a365d", // 更深的海军蓝
-                      weight: 3,
-                      opacity: 0.6, // 提高不透明度
-                      fillOpacity: 0.2, // 提高填充不透明度
+                      color: timezoneColor,
+                      weight: 2.5,
+                      opacity: 0.9,
+                      fillColor: timezoneColor,
+                      fillOpacity: 0.15,
+                    },
+                    onEachFeature: function (feature, layer) {
+                      layer.bindTooltip(timezone.split("/").pop(), {
+                        permanent: true,
+                        direction: "center",
+                        className: "timezone-label",
+                      });
                     },
                   }).addTo(map);
                 }
@@ -138,14 +178,16 @@
                 const indexResponse = await fetch(indexGeojsonPath);
                 if (indexResponse.ok) {
                   const indexGeojsonData = await indexResponse.json();
+                  const timezoneColor = getTimezoneColor(timezone);
                   const indexTimezoneLayer = L.geoJSON(
                     indexGeojsonData,
                     {
                       style: {
-                        color: "#9b2c2c", // 更深的红褐色
-                        weight: 1,
-                        opacity: 0.6, // 提高不透明度
-                        fillOpacity: 0.2, // 提高填充不透明度
+                        color: timezoneColor,
+                        weight: 1.5,
+                        opacity: 0.7,
+                        fillColor: timezoneColor,
+                        fillOpacity: 0.1,
                       },
                     },
                   ).addTo(map);
@@ -183,6 +225,20 @@
         padding: 10px;
         border: 1px solid #ccc;
         z-index: 1000;
+      }
+
+      .timezone-label {
+        background: none;
+        border: none;
+        box-shadow: none;
+        color: #1a202c;
+        font-weight: bold;
+        font-size: 11px;
+        text-shadow:
+          2px 2px 3px rgba(255, 255, 255, 0.9),
+          -2px -2px 3px rgba(255, 255, 255, 0.9),
+          2px -2px 3px rgba(255, 255, 255, 0.9),
+          -2px 2px 3px rgba(255, 255, 255, 0.9);
       }
     </style>
   </head>
