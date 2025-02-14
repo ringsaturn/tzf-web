@@ -18,4 +18,5 @@ preview:
 	@cd dist && python3 -m http.server 9999
 
 gen-polygons:
-	@go run cmd/gen-tz-polygons/main.go -output static/timezone-polygons
+	@go run cmd/gen-tz-polygons/main.go -output static/timezone-polygons -type 0
+	@go run cmd/gen-tz-polygons/main.go -output static/timezone-polygons-index -type 1
