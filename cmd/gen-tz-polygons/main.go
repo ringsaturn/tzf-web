@@ -83,7 +83,9 @@ func generateIndexPolygons(input *pb.PreindexTimezones) {
 
 		polygon := geojson.NewMultiPolygon(polys)
 		properties := map[string]any{
-			"name": name,
+			"properties": map[string]any{
+				"name": name,
+			},
 		}
 		propertiesBytes, err := json.Marshal(properties)
 		if err != nil {
