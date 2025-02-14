@@ -76,7 +76,31 @@
       window.finder = null;
       window.loadedTimezones = new Set(); // 记录已加载的时区
       window.timezoneColors = new Map(); // 存储时区和颜色的映射
+      window.indexLayers = new Map(); // 存储索引图层
       let colorIndex = 0;
+
+      // 从 localStorage 读取显示索引数据的配置
+      window.showIndexData =
+        localStorage.getItem("showIndexData") === "true";
+
+      // 切换索引数据显示状态
+      window.toggleIndexData = function () {
+        window.showIndexData = !window.showIndexData;
+        localStorage.setItem("showIndexData", window.showIndexData);
+
+        // 更新复选框状态
+        document.getElementById("show-index-data").checked =
+          window.showIndexData;
+
+        // 更新所有已加载的索引图层的可见性
+        for (const [timezone, layer] of window.indexLayers.entries()) {
+          if (window.showIndexData) {
+            layer.addTo(map);
+          } else {
+            layer.remove();
+          }
+        }
+      };
 
       // 获取时区的颜色，确保相邻时区颜色不同
       function getTimezoneColor(timezone) {
@@ -190,7 +214,15 @@
                         fillOpacity: 0.1,
                       },
                     },
-                  ).addTo(map);
+                  );
+
+                  // 存储索引图层引用
+                  window.indexLayers.set(timezone, indexTimezoneLayer);
+
+                  // 根据当前配置决定是否显示
+                  if (window.showIndexData) {
+                    indexTimezoneLayer.addTo(map);
+                  }
                 }
               } catch (error) {
                 console.error(
@@ -227,6 +259,21 @@
         z-index: 1000;
       }
 
+      .controls-container {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .toggle-switch {
+        margin-right: 8px;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+        color: #4a5568;
+      }
+
       .timezone-label {
         background: none;
         border: none;
@@ -253,6 +300,16 @@
       <input type="text" id="longitude" name="longitude" />
       <br />
       <button id="add-marker">Add Marker</button>
+      <div class="controls-container">
+        <input
+          type="checkbox"
+          id="show-index-data"
+          class="toggle-switch"
+          onchange="toggleIndexData()"
+        />
+        <label for="show-index-data" class="toggle-label"
+        >Show Index Data</label>
+      </div>
     </div>
     <span
       id="mousecoord"
@@ -274,7 +331,7 @@
       var layer = protomapsL.leafletLayer({
         url:
           "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
-        theme: "light",
+        theme: "white",
       });
       layer.addTo(map);
 
@@ -340,6 +397,10 @@
         const lng = e.latlng.lng;
         showTimezone(lat, lng, map);
       });
+
+      // 初始化复选框状态
+      document.getElementById("show-index-data").checked =
+        window.showIndexData;
     </script>
   </body>
 </html>
