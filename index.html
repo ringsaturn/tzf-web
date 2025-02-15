@@ -74,33 +74,13 @@
       ];
 
       window.finder = null;
-      window.loadedTimezones = new Set(); // 记录已加载的时区
-      window.timezoneColors = new Map(); // 存储时区和颜色的映射
-      window.indexLayers = new Map(); // 存储索引图层
+      window.loadedTimezones = new Set();
+      window.timezoneColors = new Map();
+      window.indexLayers = new Map();
+      window.markers = new Map(); // Store multiple markers
       let colorIndex = 0;
 
-      // 从 localStorage 读取显示索引数据的配置
-      window.showIndexData =
-        localStorage.getItem("showIndexData") === "true";
-
-      // 切换索引数据显示状态
-      window.toggleIndexData = function () {
-        window.showIndexData = !window.showIndexData;
-        localStorage.setItem("showIndexData", window.showIndexData);
-
-        // 更新复选框状态
-        document.getElementById("show-index-data").checked =
-          window.showIndexData;
-
-        // 更新所有已加载的索引图层的可见性
-        for (const [timezone, layer] of window.indexLayers.entries()) {
-          if (window.showIndexData) {
-            layer.addTo(map);
-          } else {
-            layer.remove();
-          }
-        }
-      };
+      window.showIndexData = localStorage.getItem("showIndexData") === "true";
 
       // 获取时区的颜色，确保相邻时区颜色不同
       function getTimezoneColor(timezone) {
@@ -114,130 +94,280 @@
         return window.timezoneColors.get(timezone);
       }
 
-      async function loadWasm() {
-        await init();
-        finder = new WasmFinder();
+      function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          lat: parseFloat(params.get('lat')),
+          lng: parseFloat(params.get('lng')),
+          zoom: parseInt(params.get('zoom')),
+          showIndex: params.get('showIndex') === 'true',
+          bounds: params.get('bounds') ? JSON.parse(decodeURIComponent(params.get('bounds'))) : null,
+          timezones: params.get('timezones') ? params.get('timezones').split(',') : [],
+          markers: params.getAll('marker').map(m => {
+            const [lat, lng] = m.split(',').map(parseFloat);
+            return { lat, lng };
+          })
+        };
       }
 
-      loadWasm();
-      window.finder = finder;
+      function getShareableUrl() {
+        const bounds = map.getBounds();
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const params = new URLSearchParams();
 
-      window.showTimezone = async function (lat, lng, map) {
-        if (finder) {
-          if (isNaN(lng) || isNaN(lat)) {
-            alert(
-              "Please enter valid numbers for longitude and latitude.",
-            );
-            return;
-          }
+        // Add map state
+        params.set('lat', center.lat.toFixed(4));
+        params.set('lng', center.lng.toFixed(4));
+        params.set('zoom', zoom);
+        params.set('bounds', encodeURIComponent(JSON.stringify({
+          north: bounds.getNorth().toFixed(4),
+          south: bounds.getSouth().toFixed(4),
+          east: bounds.getEast().toFixed(4),
+          west: bounds.getWest().toFixed(4)
+        })));
 
-          if (lng < -180 || lng > 180) {
-            alert(
-              "Please enter a valid longitude between -180 and 180 degrees.",
-            );
-            return;
-          }
+        // Add all markers
+        for (const [key, marker] of window.markers.entries()) {
+          const pos = marker.getLatLng();
+          params.append('marker', `${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`);
+        }
 
-          if (lat < -90 || lat > 90) {
-            alert(
-              "Please enter a valid latitude between -90 and 90 degrees.",
-            );
-            return;
-          }
+        // Add visible timezones
+        if (window.loadedTimezones.size > 0) {
+          params.set('timezones', Array.from(window.loadedTimezones).join(','));
+        }
 
-          const roundedLat = lat.toFixed(4);
-          const roundedLng = lng.toFixed(4);
-          const timezones = finder.get_tz_names(roundedLng, roundedLat);
-          var joinedTimezones = timezones.join(", ");
+        // Add index data state
+        params.set('showIndex', window.showIndexData);
 
-          const marker = L.marker([roundedLat, roundedLng]).addTo(map);
+        return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      }
 
-          marker.bindPopup(
-            `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${joinedTimezones}`,
-          ).openPopup();
+      window.showTimezone = async function (lat, lng, map, markerId = null) {
+        if (!window.finder) {
+          alert("WASM module is not loaded yet. Please wait for a few seconds.");
+          return;
+        }
 
-          for (const timezone of timezones) {
-            const geojsonPath = `./timezone-polygons/${
-              timezone.replace(/\//g, "-")
-            }.geojson`;
-            const indexGeojsonPath = `./timezone-polygons-index/${
-              timezone.replace(/\//g, "-")
-            }.geojson`;
+        if (isNaN(lng) || isNaN(lat)) {
+          alert("Please enter valid numbers for longitude and latitude.");
+          return;
+        }
 
-            console.log(
-              `Loading GeoJSON for ${timezone} from ${geojsonPath}`,
-            );
-            console.log(
-              `Loading index GeoJSON for ${timezone} from ${indexGeojsonPath}`,
-            );
+        if (lng < -180 || lng > 180) {
+          alert("Please enter a valid longitude between -180 and 180 degrees.");
+          return;
+        }
 
-            if (!window.loadedTimezones.has(timezone)) {
-              window.loadedTimezones.add(timezone);
+        if (lat < -90 || lat > 90) {
+          alert("Please enter a valid latitude between -90 and 90 degrees.");
+          return;
+        }
 
-              try {
-                // 加载详细边界
-                const response = await fetch(geojsonPath);
-                if (response.ok) {
-                  const geojsonData = await response.json();
-                  const timezoneColor = getTimezoneColor(timezone);
-                  const timezoneLayer = L.geoJSON(geojsonData, {
-                    style: {
-                      color: timezoneColor,
-                      weight: 2.5,
-                      opacity: 0.9,
-                      fillColor: timezoneColor,
-                      fillOpacity: 0.15,
-                    },
-                    onEachFeature: function (feature, layer) {
-                      layer.bindTooltip(timezone.split("/").pop(), {
-                        permanent: true,
-                        direction: "center",
-                        className: "timezone-label",
-                      });
-                    },
-                  }).addTo(map);
-                }
+        const roundedLat = lat.toFixed(4);
+        const roundedLng = lng.toFixed(4);
+        const timezones = window.finder.get_tz_names(roundedLng, roundedLat);
+        var joinedTimezones = timezones.join(", ");
 
-                // 加载索引边界
-                const indexResponse = await fetch(indexGeojsonPath);
-                if (indexResponse.ok) {
-                  const indexGeojsonData = await indexResponse.json();
-                  const timezoneColor = getTimezoneColor(timezone);
-                  const indexTimezoneLayer = L.geoJSON(
-                    indexGeojsonData,
-                    {
-                      style: {
-                        color: timezoneColor,
-                        weight: 1.5,
-                        opacity: 0.7,
-                        fillColor: timezoneColor,
-                        fillOpacity: 0.1,
-                      },
-                    },
-                  );
+        // Generate a unique ID for the marker if not provided
+        const id = markerId || `marker-${Date.now()}`;
+        
+        // Create and store the marker
+        const marker = L.marker([roundedLat, roundedLng]).addTo(map);
+        window.markers.set(id, marker);
 
-                  // 存储索引图层引用
-                  window.indexLayers.set(timezone, indexTimezoneLayer);
+        marker.bindPopup(
+          `Latitude: ${roundedLat}<br>Longitude: ${roundedLng}<br>Timezone: ${joinedTimezones}`,
+        ).openPopup();
 
-                  // 根据当前配置决定是否显示
-                  if (window.showIndexData) {
-                    indexTimezoneLayer.addTo(map);
-                  }
-                }
-              } catch (error) {
-                console.error(
-                  `Error loading GeoJSON for ${timezone}:`,
-                  error,
-                );
+        for (const timezone of timezones) {
+          const geojsonPath = `./timezone-polygons/${timezone.replace(/\//g, "-")}.geojson`;
+          const indexGeojsonPath = `./timezone-polygons-index/${timezone.replace(/\//g, "-")}.geojson`;
+
+          if (!window.loadedTimezones.has(timezone)) {
+            window.loadedTimezones.add(timezone);
+
+            try {
+              // Load detailed boundary
+              const response = await fetch(geojsonPath);
+              if (response.ok) {
+                const geojsonData = await response.json();
+                const timezoneColor = getTimezoneColor(timezone);
+                const timezoneLayer = L.geoJSON(geojsonData, {
+                  style: {
+                    color: timezoneColor,
+                    weight: 2.5,
+                    opacity: 0.9,
+                    fillColor: timezoneColor,
+                    fillOpacity: 0.15,
+                  },
+                  onEachFeature: function (feature, layer) {
+                    layer.bindTooltip(timezone.split("/").pop(), {
+                      permanent: true,
+                      direction: "center",
+                      className: "timezone-label",
+                    });
+                  },
+                }).addTo(map);
               }
+
+              // Load index boundary
+              const indexResponse = await fetch(indexGeojsonPath);
+              if (indexResponse.ok) {
+                const indexGeojsonData = await indexResponse.json();
+                const timezoneColor = getTimezoneColor(timezone);
+                const indexTimezoneLayer = L.geoJSON(indexGeojsonData, {
+                  style: {
+                    color: timezoneColor,
+                    weight: 1.5,
+                    opacity: 0.7,
+                    fillColor: timezoneColor,
+                    fillOpacity: 0.1,
+                  },
+                });
+
+                window.indexLayers.set(timezone, indexTimezoneLayer);
+                if (window.showIndexData) {
+                  indexTimezoneLayer.addTo(map);
+                }
+              }
+            } catch (error) {
+              console.error(`Error loading GeoJSON for ${timezone}:`, error);
             }
           }
-        } else {
-          alert(
-            "WASM module is not loaded yet. Please Wait for seconds.",
-          );
         }
       };
+
+      window.toggleIndexData = function () {
+        window.showIndexData = !window.showIndexData;
+        localStorage.setItem("showIndexData", window.showIndexData);
+        document.getElementById("show-index-data").checked = window.showIndexData;
+
+        for (const [timezone, layer] of window.indexLayers.entries()) {
+          if (window.showIndexData) {
+            layer.addTo(map);
+          } else {
+            layer.remove();
+          }
+        }
+      };
+
+      async function loadWasm() {
+        await init();
+        window.finder = new WasmFinder();
+        
+        // Process URL parameters after WASM is loaded
+        const urlParams = getUrlParams();
+        
+        if (urlParams.showIndex !== null) {
+          window.showIndexData = urlParams.showIndex;
+          document.getElementById("show-index-data").checked = urlParams.showIndex;
+        }
+
+        // Load markers from URL if present
+        if (urlParams.markers && urlParams.markers.length > 0) {
+          for (const marker of urlParams.markers) {
+            await showTimezone(marker.lat, marker.lng, map);
+          }
+        }
+      }
+
+      // Get URL parameters for initial map view
+      const urlParams = getUrlParams();
+
+      // Initialize map
+      var southWest = L.latLng(-90, -180);
+      var northEast = L.latLng(90, 180);
+      var bounds = L.latLngBounds(southWest, northEast);
+
+      var map = L.map("map", {
+        maxBounds: bounds,
+        maxBoundsViscosity: 1,
+        worldCopyJump: true,
+        maxZoom: 18,
+        minZoom: 3,
+        cursor: true,
+      }).setView(
+        urlParams.lat && urlParams.lng ? [urlParams.lat, urlParams.lng] : [40.7128, -74.0060],
+        urlParams.zoom || 2
+      );
+
+      // Add base layer
+      var layer = protomapsL.leafletLayer({
+        url: "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
+        theme: "white",
+      });
+      layer.addTo(map);
+
+      // Add attribution
+      map.attributionControl.addAttribution(
+        '&copy; <a href="https://github.com/evansiroky/timezone-boundary-builder" target="_blank">timezone-boundary-builder</a>',
+      );
+
+      // Add grid layer
+      L.GridLayer.GridDebug = L.GridLayer.extend({
+        createTile: function (coords) {
+          const tile = document.createElement("div");
+          tile.style.outline = "1px solid rgba(208, 240, 192, 1)";
+          tile.style.fontSize = "13pt";
+          tile.style.opacity = "1";
+          tile.innerHTML = [coords.z, coords.x, coords.y].join("/");
+          return tile;
+        },
+      });
+      L.gridLayer.gridDebug = function (opts) {
+        return new L.GridLayer.GridDebug(opts);
+      };
+      map.addLayer(L.gridLayer.gridDebug());
+
+      // Add event listeners
+      document.getElementById("add-marker").addEventListener("click", () => {
+        const lat = parseFloat(document.getElementById("latitude").value);
+        const lon = parseFloat(document.getElementById("longitude").value);
+        if (!isNaN(lat) && !isNaN(lon)) {
+          showTimezone(lat, lon, map);
+        } else {
+          alert("Please enter valid latitude and longitude values.");
+        }
+      });
+
+      map.on("mousemove", function (e) {
+        var lng = e.latlng.wrap().lng.toFixed(4);
+        var lat = e.latlng.wrap().lat.toFixed(4);
+        if (window.finder) {
+          var timezones = window.finder.get_tz_names(lng, lat);
+          var joinedTimezones = timezones.join(", ");
+          var dataVersion = window.finder.data_version();
+          document.getElementById("mousecoord").innerHTML =
+            `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
+        } else {
+          document.getElementById("mousecoord").innerHTML = `Lat: ${lat} Lng: ${lng}`;
+        }
+      });
+
+      map.on("click", function (e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        showTimezone(lat, lng, map);
+      });
+
+      document.getElementById('share-button').addEventListener('click', async () => {
+        const url = getShareableUrl();
+        try {
+          await navigator.clipboard.writeText(url);
+          alert('URL copied to clipboard!');
+        } catch (err) {
+          console.error('Failed to copy URL:', err);
+          alert('Failed to copy URL. Please try again.');
+        }
+      });
+
+      // Initialize checkbox state
+      document.getElementById("show-index-data").checked = window.showIndexData;
+
+      // Load WASM
+      loadWasm();
     </script>
 
     <style>
@@ -287,6 +417,20 @@
           2px -2px 3px rgba(255, 255, 255, 0.9),
           -2px 2px 3px rgba(255, 255, 255, 0.9);
       }
+
+      .share-button {
+        margin-top: 10px;
+        padding: 5px 10px;
+        background-color: #4a5568;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .share-button:hover {
+        background-color: #2d3748;
+      }
     </style>
   </head>
 
@@ -310,94 +454,13 @@
         <label for="show-index-data" class="toggle-label"
         >Show Index Data</label>
       </div>
+      <button id="share-button" class="share-button">Share Current View</button>
     </div>
     <span
       id="mousecoord"
       style="display: block; position: absolute; right: 0; top: 0; z-index: 9999; background-color: white"
     ></span>
     <script>
-      var southWest = L.latLng(-90, -180);
-      var northEast = L.latLng(90, 180);
-      var bounds = L.latLngBounds(southWest, northEast);
-      var map = L.map("map", {
-        maxBounds: bounds,
-        maxBoundsViscosity: 1,
-        worldCopyJump: true,
-        maxZoom: 18,
-        minZoom: 3,
-        cursor: true,
-      }).setView([40.7128, -74.0060], 2);
-
-      var layer = protomapsL.leafletLayer({
-        url:
-          "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
-        theme: "white",
-      });
-      layer.addTo(map);
-
-      map.attributionControl.addAttribution(
-        '&copy; <a href="https://github.com/evansiroky/timezone-boundary-builder" target="_blank">timezone-boundary-builder</a>',
-      );
-
-      L.GridLayer.GridDebug = L.GridLayer.extend({
-        createTile: function (coords) {
-          const tile = document.createElement("div");
-          tile.style.outline = "1px solid rgba(208, 240, 192, 1)";
-          tile.style.fontSize = "13pt";
-          tile.style.opacity = "1"; // Added 50% opacity
-          tile.innerHTML = [coords.z, coords.x, coords.y].join("/");
-          return tile;
-        },
-      });
-      L.gridLayer.gridDebug = function (opts) {
-        return new L.GridLayer.GridDebug(opts);
-      };
-
-      map.addLayer(L.gridLayer.gridDebug());
-
-      // Event listener for the button
-      document.getElementById("add-marker").addEventListener(
-        "click",
-        () => {
-          const lat = parseFloat(
-            document.getElementById("latitude").value,
-          );
-          const lon = parseFloat(
-            document.getElementById("longitude").value,
-          );
-          if (!isNaN(lat) && !isNaN(lon)) {
-            showTimezone(lat, lon, map);
-          } else {
-            alert("Please enter valid latitude and longitude values.");
-          }
-        },
-      );
-
-      map.on("mousemove", function (e) {
-        var lng = e.latlng.wrap().lng.toFixed(4);
-        var lat = e.latlng.wrap().lat.toFixed(4);
-        if (finder) {
-          // var timezone = finder.get_tz_name(lng, lat);
-          var timezones = finder.get_tz_names(lng, lat);
-          var joinedTimezones = timezones.join(", ");
-          var dataVersion = finder.data_version();
-          document.getElementById(
-            "mousecoord",
-          ).innerHTML =
-            `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
-        } else {
-          document.getElementById(
-            "mousecoord",
-          ).innerHTML = `Lat: ${lat} Lng: ${lng}`;
-        }
-      });
-
-      map.on("click", function (e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        showTimezone(lat, lng, map);
-      });
-
       // 初始化复选框状态
       document.getElementById("show-index-data").checked =
         window.showIndexData;
