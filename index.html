@@ -80,7 +80,8 @@
       window.markers = new Map(); // Store multiple markers
       let colorIndex = 0;
 
-      window.showIndexData = localStorage.getItem("showIndexData") === "true";
+      window.showIndexData =
+        localStorage.getItem("showIndexData") === "true";
 
       // 获取时区的颜色，确保相邻时区颜色不同
       function getTimezoneColor(timezone) {
@@ -97,16 +98,20 @@
       function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
         return {
-          lat: parseFloat(params.get('lat')),
-          lng: parseFloat(params.get('lng')),
-          zoom: parseInt(params.get('zoom')),
-          showIndex: params.get('showIndex') === 'true',
-          bounds: params.get('bounds') ? JSON.parse(decodeURIComponent(params.get('bounds'))) : null,
-          timezones: params.get('timezones') ? params.get('timezones').split(',') : [],
-          markers: params.getAll('marker').map(m => {
-            const [lat, lng] = m.split(',').map(parseFloat);
+          lat: parseFloat(params.get("lat")),
+          lng: parseFloat(params.get("lng")),
+          zoom: parseInt(params.get("zoom")),
+          showIndex: params.get("showIndex") === "true",
+          bounds: params.get("bounds")
+            ? JSON.parse(decodeURIComponent(params.get("bounds")))
+            : null,
+          timezones: params.get("timezones")
+            ? params.get("timezones").split(",")
+            : [],
+          markers: params.getAll("marker").map((m) => {
+            const [lat, lng] = m.split(",").map(parseFloat);
             return { lat, lng };
-          })
+          }),
         };
       }
 
@@ -117,62 +122,87 @@
         const params = new URLSearchParams();
 
         // Add map state
-        params.set('lat', center.lat.toFixed(4));
-        params.set('lng', center.lng.toFixed(4));
-        params.set('zoom', zoom);
-        params.set('bounds', encodeURIComponent(JSON.stringify({
-          north: bounds.getNorth().toFixed(4),
-          south: bounds.getSouth().toFixed(4),
-          east: bounds.getEast().toFixed(4),
-          west: bounds.getWest().toFixed(4)
-        })));
+        params.set("lat", center.lat.toFixed(4));
+        params.set("lng", center.lng.toFixed(4));
+        params.set("zoom", zoom);
+        params.set(
+          "bounds",
+          encodeURIComponent(JSON.stringify({
+            north: bounds.getNorth().toFixed(4),
+            south: bounds.getSouth().toFixed(4),
+            east: bounds.getEast().toFixed(4),
+            west: bounds.getWest().toFixed(4),
+          })),
+        );
 
         // Add all markers
         for (const [key, marker] of window.markers.entries()) {
           const pos = marker.getLatLng();
-          params.append('marker', `${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`);
+          params.append(
+            "marker",
+            `${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`,
+          );
         }
 
         // Add visible timezones
         if (window.loadedTimezones.size > 0) {
-          params.set('timezones', Array.from(window.loadedTimezones).join(','));
+          params.set(
+            "timezones",
+            Array.from(window.loadedTimezones).join(","),
+          );
         }
 
         // Add index data state
-        params.set('showIndex', window.showIndexData);
+        params.set("showIndex", window.showIndexData);
 
         return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
       }
 
-      window.showTimezone = async function (lat, lng, map, markerId = null) {
+      window.showTimezone = async function (
+        lat,
+        lng,
+        map,
+        markerId = null,
+      ) {
         if (!window.finder) {
-          alert("WASM module is not loaded yet. Please wait for a few seconds.");
+          alert(
+            "WASM module is not loaded yet. Please wait for a few seconds.",
+          );
           return;
         }
 
         if (isNaN(lng) || isNaN(lat)) {
-          alert("Please enter valid numbers for longitude and latitude.");
+          alert(
+            "Please enter valid numbers for longitude and latitude.",
+          );
           return;
         }
 
         if (lng < -180 || lng > 180) {
-          alert("Please enter a valid longitude between -180 and 180 degrees.");
+          alert(
+            "Please enter a valid longitude between -180 and 180 degrees.",
+          );
           return;
         }
 
         if (lat < -90 || lat > 90) {
-          alert("Please enter a valid latitude between -90 and 90 degrees.");
+          alert(
+            "Please enter a valid latitude between -90 and 90 degrees.",
+          );
           return;
         }
 
         const roundedLat = lat.toFixed(4);
         const roundedLng = lng.toFixed(4);
-        const timezones = window.finder.get_tz_names(roundedLng, roundedLat);
+        const timezones = window.finder.get_tz_names(
+          roundedLng,
+          roundedLat,
+        );
         var joinedTimezones = timezones.join(", ");
 
         // Generate a unique ID for the marker if not provided
         const id = markerId || `marker-${Date.now()}`;
-        
+
         // Create and store the marker
         const marker = L.marker([roundedLat, roundedLng]).addTo(map);
         window.markers.set(id, marker);
@@ -182,8 +212,12 @@
         ).openPopup();
 
         for (const timezone of timezones) {
-          const geojsonPath = `./timezone-polygons/${timezone.replace(/\//g, "-")}.geojson`;
-          const indexGeojsonPath = `./timezone-polygons-index/${timezone.replace(/\//g, "-")}.geojson`;
+          const geojsonPath = `./timezone-polygons/${
+            timezone.replace(/\//g, "-")
+          }.geojson`;
+          const indexGeojsonPath = `./timezone-polygons-index/${
+            timezone.replace(/\//g, "-")
+          }.geojson`;
 
           if (!window.loadedTimezones.has(timezone)) {
             window.loadedTimezones.add(timezone);
@@ -233,7 +267,10 @@
                 }
               }
             } catch (error) {
-              console.error(`Error loading GeoJSON for ${timezone}:`, error);
+              console.error(
+                `Error loading GeoJSON for ${timezone}:`,
+                error,
+              );
             }
           }
         }
@@ -242,7 +279,8 @@
       window.toggleIndexData = function () {
         window.showIndexData = !window.showIndexData;
         localStorage.setItem("showIndexData", window.showIndexData);
-        document.getElementById("show-index-data").checked = window.showIndexData;
+        document.getElementById("show-index-data").checked =
+          window.showIndexData;
 
         for (const [timezone, layer] of window.indexLayers.entries()) {
           if (window.showIndexData) {
@@ -256,13 +294,14 @@
       async function loadWasm() {
         await init();
         window.finder = new WasmFinder();
-        
+
         // Process URL parameters after WASM is loaded
         const urlParams = getUrlParams();
-        
+
         if (urlParams.showIndex !== null) {
           window.showIndexData = urlParams.showIndex;
-          document.getElementById("show-index-data").checked = urlParams.showIndex;
+          document.getElementById("show-index-data").checked =
+            urlParams.showIndex;
         }
 
         // Load markers from URL if present
@@ -289,13 +328,16 @@
         minZoom: 3,
         cursor: true,
       }).setView(
-        urlParams.lat && urlParams.lng ? [urlParams.lat, urlParams.lng] : [40.7128, -74.0060],
-        urlParams.zoom || 2
+        urlParams.lat && urlParams.lng
+          ? [urlParams.lat, urlParams.lng]
+          : [40.7128, -74.0060],
+        urlParams.zoom || 2,
       );
 
       // Add base layer
       var layer = protomapsL.leafletLayer({
-        url: "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
+        url:
+          "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
         theme: "white",
       });
       layer.addTo(map);
@@ -322,15 +364,22 @@
       map.addLayer(L.gridLayer.gridDebug());
 
       // Add event listeners
-      document.getElementById("add-marker").addEventListener("click", () => {
-        const lat = parseFloat(document.getElementById("latitude").value);
-        const lon = parseFloat(document.getElementById("longitude").value);
-        if (!isNaN(lat) && !isNaN(lon)) {
-          showTimezone(lat, lon, map);
-        } else {
-          alert("Please enter valid latitude and longitude values.");
-        }
-      });
+      document.getElementById("add-marker").addEventListener(
+        "click",
+        () => {
+          const lat = parseFloat(
+            document.getElementById("latitude").value,
+          );
+          const lon = parseFloat(
+            document.getElementById("longitude").value,
+          );
+          if (!isNaN(lat) && !isNaN(lon)) {
+            showTimezone(lat, lon, map);
+          } else {
+            alert("Please enter valid latitude and longitude values.");
+          }
+        },
+      );
 
       map.on("mousemove", function (e) {
         var lng = e.latlng.wrap().lng.toFixed(4);
@@ -342,7 +391,8 @@
           document.getElementById("mousecoord").innerHTML =
             `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
         } else {
-          document.getElementById("mousecoord").innerHTML = `Lat: ${lat} Lng: ${lng}`;
+          document.getElementById("mousecoord").innerHTML =
+            `Lat: ${lat} Lng: ${lng}`;
         }
       });
 
@@ -352,19 +402,23 @@
         showTimezone(lat, lng, map);
       });
 
-      document.getElementById('share-button').addEventListener('click', async () => {
-        const url = getShareableUrl();
-        try {
-          await navigator.clipboard.writeText(url);
-          alert('URL copied to clipboard!');
-        } catch (err) {
-          console.error('Failed to copy URL:', err);
-          alert('Failed to copy URL. Please try again.');
-        }
-      });
+      document.getElementById("share-button").addEventListener(
+        "click",
+        async () => {
+          const url = getShareableUrl();
+          try {
+            await navigator.clipboard.writeText(url);
+            alert("URL copied to clipboard!");
+          } catch (err) {
+            console.error("Failed to copy URL:", err);
+            alert("Failed to copy URL. Please try again.");
+          }
+        },
+      );
 
       // Initialize checkbox state
-      document.getElementById("show-index-data").checked = window.showIndexData;
+      document.getElementById("show-index-data").checked =
+        window.showIndexData;
 
       // Load WASM
       loadWasm();
