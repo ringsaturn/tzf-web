@@ -1,13 +1,13 @@
 module github.com/ringsaturn/tzf-web
 
-go 1.23.3
+go 1.24
 
 require (
 	github.com/paulmach/orb v0.11.1
-	github.com/ringsaturn/tzf v0.16.1
+	github.com/ringsaturn/tzf v0.17.0
 	github.com/ringsaturn/tzf-rel-lite v0.0.2025-a
 	github.com/tidwall/geojson v1.4.5
-	google.golang.org/protobuf v1.36.4
+	google.golang.org/protobuf v1.36.5
 )
 
 require (

@@ -9,7 +9,7 @@ import (
 	"github.com/paulmach/orb/maptile"
 	tzfrellite "github.com/ringsaturn/tzf-rel-lite"
 	"github.com/ringsaturn/tzf/convert"
-	"github.com/ringsaturn/tzf/pb"
+	pb "github.com/ringsaturn/tzf/gen/go/tzf/v1"
 	"github.com/tidwall/geojson"
 	"github.com/tidwall/geojson/geometry"
 	"google.golang.org/protobuf/proto"
