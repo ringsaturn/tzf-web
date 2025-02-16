@@ -1139,9 +1139,12 @@
       @media (max-width: 768px) {
         #coordinate-inputs {
           left: -100%;
-          width: 100%;
-          max-width: none;
+          width: 85%;
+          max-width: 300px;
           border-radius: 0;
+          font-size: 14px;
+          padding: 12px;
+          transition: left 0.3s ease;
         }
 
         #coordinate-inputs.expanded {
@@ -1149,15 +1152,120 @@
         }
 
         .toggle-panel-button {
-          width: 30px;
-          height: 60px;
-          right: -30px;
+          width: 24px;
+          height: 48px;
+          right: -24px;
+          transition: transform 0.3s ease;
         }
 
-        #mousecoord {
-          right: 10px;
-          left: 10px;
-          text-align: center;
+        #coordinate-inputs.expanded .toggle-panel-button {
+          transform: rotate(180deg);
+        }
+
+        .panel-section {
+          margin-top: 12px;
+          padding-top: 12px;
+        }
+
+        .panel-section-title {
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+
+        .input-group {
+          margin-bottom: 8px;
+        }
+
+        .input-group label {
+          width: 35px;
+          font-size: 13px;
+        }
+
+        .input-group input {
+          width: calc(100% - 45px);
+          padding: 6px 8px;
+          font-size: 13px;
+        }
+
+        .input-help {
+          font-size: 11px;
+          margin-top: 2px;
+        }
+
+        button {
+          padding: 8px 12px;
+          font-size: 13px;
+          min-height: 36px;
+        }
+
+        .marker-controls {
+          gap: 6px;
+        }
+
+        .marker-controls button {
+          padding: 6px;
+          font-size: 12px;
+        }
+
+        .toggle-switch {
+          width: 14px;
+          height: 14px;
+        }
+
+        .toggle-label {
+          font-size: 12px;
+        }
+
+        .theme-controls select {
+          padding: 6px 8px;
+          font-size: 13px;
+        }
+
+        .shortcuts-content {
+          padding: 6px;
+        }
+
+        .shortcuts-content li {
+          font-size: 12px;
+          margin-bottom: 4px;
+        }
+
+        kbd {
+          padding: 2px 4px;
+          font-size: 11px;
+        }
+
+        .links-section ul {
+          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          gap: 6px;
+        }
+
+        .links-section a {
+          font-size: 12px;
+          padding: 4px 6px;
+        }
+      }
+
+      /* 针对更小屏幕的优化 */
+      @media (max-width: 320px) {
+        #coordinate-inputs {
+          left: -100%;
+          width: 90%;
+          max-width: 260px;
+          padding: 10px;
+        }
+
+        .panel-section {
+          margin-top: 10px;
+          padding-top: 10px;
+        }
+
+        .input-group input {
+          width: calc(100% - 40px);
+        }
+
+        .marker-controls {
+          grid-template-columns: 1fr;
         }
       }
 
