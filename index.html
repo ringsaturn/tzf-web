@@ -1026,28 +1026,30 @@
       #coordinate-inputs {
         position: absolute;
         top: 20px;
-        left: 20px;
-        max-width: 300px;
-        transition: transform 0.3s ease;
+        left: -320px; /* 默认隐藏 */
+        width: 300px;
+        transition: left 0.3s ease;
+        background: var(--panel-bg);
+        border-radius: 0 8px 8px 0;
+        box-shadow: var(--panel-shadow);
       }
 
-      #coordinate-inputs.collapsed {
-        transform: translateX(-100%);
+      #coordinate-inputs.expanded {
+        left: 0;
       }
 
       .toggle-panel-button {
         position: absolute;
-        right: -30px;
+        right: -40px;
         top: 50%;
         transform: translateY(-50%);
-        width: 30px;
-        height: 60px;
+        width: 40px;
+        height: 80px;
         background-color: var(--panel-bg);
         border: none;
         border-radius: 0 8px 8px 0;
         box-shadow: var(--panel-shadow);
         cursor: pointer;
-        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1055,97 +1057,94 @@
       }
 
       .toggle-panel-button::after {
-        content: "◀";
-        font-size: 14px;
+        content: "▶";
+        font-size: 16px;
         color: var(--text-color);
       }
 
-      #coordinate-inputs.collapsed .toggle-panel-button::after {
-        content: "▶";
-      }
-
-      [data-theme="high-contrast"] .toggle-panel-button {
-        border: 2px solid white;
-        border-left: none;
+      #coordinate-inputs.expanded .toggle-panel-button::after {
+        content: "◀";
       }
 
       #mousecoord {
         position: absolute;
         right: 70px;
-        top: 20px;
-        padding: 6px 10px;
-        font-size: 14px;
-        line-height: 1.5;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        box-shadow: var(--panel-shadow);
+        top: 10px;
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 1.2;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 4px;
+        box-shadow: none;
+      }
+
+      [data-theme="dark"] #mousecoord {
+        background: rgba(0, 0, 0, 0.8);
       }
 
       footer {
         position: absolute;
-        bottom: 20px;
-        left: 20px;
-        max-width: 400px;
-        transition: transform 0.3s ease;
-      }
-
-      footer.collapsed {
-        transform: translateY(calc(100% - 30px));
-      }
-
-      .toggle-footer-button {
-        position: absolute;
-        top: -30px;
-        right: 0;
-        width: 60px;
-        height: 30px;
-        background-color: var(--panel-bg);
-        border: none;
-        border-radius: 8px 8px 0 0;
-        box-shadow: var(--panel-shadow);
-        cursor: pointer;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        bottom: 0;
+        left: 0;
+        max-width: none;
+        font-size: 9px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 2px 4px;
         z-index: 1000;
-      }
-
-      .toggle-footer-button::after {
-        content: "▼";
-        font-size: 14px;
-        color: var(--text-color);
-      }
-
-      footer.collapsed .toggle-footer-button::after {
-        content: "▲";
-      }
-
-      [data-theme="high-contrast"] .toggle-footer-button {
-        border: 2px solid white;
-        border-bottom: none;
       }
 
       footer ul {
         list-style: none;
         padding: 0;
         margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
       }
 
       footer li {
-        margin-bottom: 8px;
+        margin: 0;
+      }
+
+      footer li:not(:last-child)::after {
+        content: "|";
+        margin-left: 4px;
+        opacity: 0.5;
       }
 
       footer a {
-        color: var(--link-color);
+        color: inherit;
         text-decoration: none;
-        transition: color 0.2s;
-        font-weight: 500;
       }
 
       footer a:hover {
-        color: var(--link-hover);
         text-decoration: underline;
+      }
+
+      /* 移动端适配 */
+      @media (max-width: 768px) {
+        #coordinate-inputs {
+          left: -100%;
+          width: 100%;
+          max-width: none;
+          border-radius: 0;
+        }
+
+        #coordinate-inputs.expanded {
+          left: 0;
+        }
+
+        .toggle-panel-button {
+          width: 30px;
+          height: 60px;
+          right: -30px;
+        }
+
+        #mousecoord {
+          right: 10px;
+          left: 10px;
+          text-align: center;
+        }
       }
 
       .input-group {
@@ -1593,6 +1592,46 @@
         padding: 2px 4px;
         border-radius: 2px;
       }
+
+      .keyboard-shortcuts {
+        margin-top: 12px;
+        border-top: 1px solid var(--input-border);
+        padding-top: 12px;
+      }
+
+      .links-section {
+        margin-top: 12px;
+        border-top: 1px solid var(--input-border);
+        padding-top: 12px;
+      }
+
+      .links-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .links-section li {
+        margin: 0;
+      }
+
+      .links-section a {
+        color: var(--link-color);
+        text-decoration: none;
+        font-size: 12px;
+      }
+
+      .links-section a:hover {
+        text-decoration: underline;
+        color: var(--link-hover);
+      }
+
+      footer {
+        display: none;
+      }
     </style>
   </head>
 
@@ -1610,7 +1649,7 @@
     >
       <button
         class="toggle-panel-button"
-        onclick="document.getElementById('coordinate-inputs').classList.toggle('collapsed')"
+        onclick="document.getElementById('coordinate-inputs').classList.toggle('expanded')"
         aria-label="Toggle panel visibility"
         title="Toggle panel visibility"
       >
@@ -1730,35 +1769,23 @@
           </ul>
         </div>
       </div>
+      <div class="links-section">
+        <ul>
+          <li>
+            <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank">Simple Page</a>
+          </li>
+          <li>
+            <a href="https://github.com/ringsaturn/tzf-web" target="_blank">tzf-web</a>
+          </li>
+          <li>
+            <a href="https://github.com/ringsaturn/tzf-wasm" target="_blank">tzf-wasm</a>
+          </li>
+          <li>
+            <a href="https://github.com/ringsaturn/tzf-rs" target="_blank">tzf-rs</a>
+          </li>
+        </ul>
+      </div>
     </div>
     <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
-    <footer class="panel" role="contentinfo">
-      <button
-        class="toggle-footer-button"
-        onclick="event.stopPropagation(); document.querySelector('footer').classList.toggle('collapsed')"
-        aria-label="Toggle footer visibility"
-        title="Toggle footer visibility"
-      >
-      </button>
-      <ul>
-        <li>
-          <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank"
-          >Simple Page</a>
-        </li>
-        <li>
-          <a href="https://github.com/ringsaturn/tzf-web" target="_blank"
-          >Project Repository</a>
-        </li>
-        <li>
-          This project uses <a
-            href="https://github.com/ringsaturn/tzf-wasm"
-            target="_blank"
-          >tzf-wasm</a>, which is a Wasm binding of <a
-            href="https://github.com/ringsaturn/tzf-rs"
-            target="_blank"
-          >tzf-rs</a>.
-        </li>
-      </ul>
-    </footer>
   </body>
 </html>
