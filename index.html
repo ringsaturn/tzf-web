@@ -1018,6 +1018,44 @@
         bottom: 20px;
         left: 20px;
         max-width: 400px;
+        transition: transform 0.3s ease;
+      }
+
+      footer.collapsed {
+        transform: translateY(calc(100% - 30px));
+      }
+
+      .toggle-footer-button {
+        position: absolute;
+        top: -30px;
+        right: 0;
+        width: 60px;
+        height: 30px;
+        background-color: var(--panel-bg);
+        border: none;
+        border-radius: 8px 8px 0 0;
+        box-shadow: var(--panel-shadow);
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .toggle-footer-button::after {
+        content: "▼";
+        font-size: 14px;
+        color: var(--text-color);
+      }
+
+      footer.collapsed .toggle-footer-button::after {
+        content: "▲";
+      }
+
+      [data-theme="high-contrast"] .toggle-footer-button {
+        border: 2px solid white;
+        border-bottom: none;
       }
 
       footer ul {
@@ -1599,6 +1637,12 @@
     </div>
     <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
     <footer class="panel" role="contentinfo">
+      <button 
+        class="toggle-footer-button" 
+        onclick="document.querySelector('footer').classList.toggle('collapsed')"
+        aria-label="Toggle footer visibility"
+        title="Toggle footer visibility"
+      ></button>
       <ul>
         <li>
           <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank"
