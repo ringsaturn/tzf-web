@@ -98,62 +98,53 @@
       function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
         return {
-          lat: parseFloat(params.get("lat")),
-          lng: parseFloat(params.get("lng")),
-          zoom: parseInt(params.get("zoom")),
-          showIndex: params.get("showIndex") === "true",
-          bounds: params.get("bounds")
-            ? JSON.parse(decodeURIComponent(params.get("bounds")))
-            : null,
-          timezones: params.get("timezones")
-            ? params.get("timezones").split(",")
+          lat: parseFloat(params.get("lat") || params.get("l")),
+          lng: parseFloat(params.get("lng") || params.get("n")),
+          zoom: parseInt(params.get("zoom") || params.get("z")),
+          showIndex: (params.get("showIndex") || params.get("i")) === "true",
+          timezones: (params.get("timezones") || params.get("t"))
+            ? (params.get("timezones") || params.get("t")).split(",")
             : [],
-          markers: params.getAll("marker").map((m) => {
-            const [lat, lng] = m.split(",").map(parseFloat);
-            return { lat, lng };
-          }),
+          markers: params.has("m") 
+            ? params.get("m").split(";").map(m => {
+                const [lat, lng] = m.split(",").map(parseFloat);
+                return { lat, lng };
+              })
+            : params.getAll("marker").map((m) => {
+                const [lat, lng] = m.split(",").map(parseFloat);
+                return { lat, lng };
+              }),
         };
       }
 
       function getShareableUrl() {
-        const bounds = map.getBounds();
         const center = map.getCenter();
         const zoom = map.getZoom();
         const params = new URLSearchParams();
 
-        // Add map state
-        params.set("lat", center.lat.toFixed(4));
-        params.set("lng", center.lng.toFixed(4));
-        params.set("zoom", zoom);
-        params.set(
-          "bounds",
-          encodeURIComponent(JSON.stringify({
-            north: bounds.getNorth().toFixed(4),
-            south: bounds.getSouth().toFixed(4),
-            east: bounds.getEast().toFixed(4),
-            west: bounds.getWest().toFixed(4),
-          })),
-        );
+        // Add map state with shorter parameter names
+        params.set("l", center.lat.toFixed(3));
+        params.set("n", center.lng.toFixed(3));
+        params.set("z", zoom);
 
-        // Add all markers
-        for (const [key, marker] of window.markers.entries()) {
-          const pos = marker.getLatLng();
-          params.append(
-            "marker",
-            `${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`,
-          );
+        // Add all markers in a single parameter
+        if (window.markers.size > 0) {
+          const markerStr = Array.from(window.markers.values())
+            .map(marker => {
+              const pos = marker.getLatLng();
+              return `${pos.lat.toFixed(3)},${pos.lng.toFixed(3)}`;
+            })
+            .join(";");
+          params.set("m", markerStr);
         }
 
-        // Add visible timezones
+        // Add visible timezones with shorter parameter name
         if (window.loadedTimezones.size > 0) {
-          params.set(
-            "timezones",
-            Array.from(window.loadedTimezones).join(","),
-          );
+          params.set("t", Array.from(window.loadedTimezones).join(","));
         }
 
-        // Add index data state
-        params.set("showIndex", window.showIndexData);
+        // Add index data state with shorter parameter name
+        params.set("i", window.showIndexData);
 
         return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
       }
