@@ -332,37 +332,182 @@
         }
       };
 
-      async function loadWasm() {
-        await init();
-        window.finder = new WasmFinder();
+      // Loading state management
+      window.isLoading = true;
+      window.loadingElement = document.getElementById(
+        "loading-overlay",
+      );
 
-        // Process URL parameters after WASM is loaded
-        const urlParams = getUrlParams();
+      function showLoading(message = "Loading...") {
+        window.isLoading = true;
+        window.loadingElement.textContent = message;
+        window.loadingElement.style.display = "flex";
+      }
 
-        if (urlParams.showIndex !== null) {
-          window.showIndexData = urlParams.showIndex;
-          document.getElementById("show-index-data").checked =
-            urlParams.showIndex;
+      function hideLoading() {
+        window.isLoading = false;
+        window.loadingElement.style.display = "none";
+      }
+
+      // Error handling
+      function showError(message) {
+        const errorElement = document.getElementById("error-message");
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+        setTimeout(() => {
+          errorElement.style.display = "none";
+        }, 5000);
+      }
+
+      // Marker management
+      window.clearAllMarkers = function () {
+        for (const marker of window.markers.values()) {
+          marker.remove();
         }
-
-        // Load markers from URL if present
-        if (urlParams.markers && urlParams.markers.length > 0) {
-          for (const marker of urlParams.markers) {
-            await showTimezone(marker.lat, marker.lng, map);
-          }
+        window.markers.clear();
+        for (const layer of window.polygonLayers.values()) {
+          layer.remove();
         }
+        window.polygonLayers.clear();
+        for (const layer of window.indexLayers.values()) {
+          layer.remove();
+        }
+        window.indexLayers.clear();
+        window.loadedTimezones.clear();
+        window.timezoneColors.clear();
+        colorIndex = 0;
+      };
 
-        // Set map view after loading all markers
-        if (urlParams.lat && urlParams.lng) {
-          map.setView(
-            [urlParams.lat, urlParams.lng],
-            urlParams.zoom || 2,
-            {
-              animate: false,
-            },
-          );
+      window.removeLastMarker = function () {
+        if (window.markers.size === 0) return;
+
+        const lastMarkerId = Array.from(window.markers.keys()).pop();
+        const lastMarker = window.markers.get(lastMarkerId);
+        lastMarker.remove();
+        window.markers.delete(lastMarkerId);
+      };
+
+      // Theme initialization
+      function initializeThemeSelector() {
+        const themeSelect = document.getElementById("theme-select");
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+          themeSelect.value = savedTheme;
+        } else {
+          themeSelect.value = "auto";
         }
       }
+
+      // Update timezone label style based on theme
+      function updateTimezoneLabelStyle() {
+        const isDark = window.currentTheme === "dark";
+        document.documentElement.style.setProperty(
+          "--label-shadow-color",
+          isDark ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.9)",
+        );
+      }
+
+      // Enhance theme toggle function
+      window.toggleTheme = function (mode) {
+        if (mode === "auto") {
+          localStorage.removeItem("theme");
+          if (
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            window.currentTheme = "dark";
+          } else {
+            window.currentTheme = "light";
+          }
+        } else {
+          window.currentTheme = mode;
+          localStorage.setItem("theme", mode);
+        }
+
+        document.documentElement.setAttribute(
+          "data-theme",
+          window.currentTheme,
+        );
+        updateMapTheme(window.currentTheme);
+        updatePolygonColors();
+        updateTimezoneLabelStyle();
+      };
+
+      // Initialize loading state
+      showLoading("Loading WASM module...");
+
+      // Modified loadWasm function
+      async function loadWasm() {
+        try {
+          await init();
+          window.finder = new WasmFinder();
+          hideLoading();
+
+          const urlParams = getUrlParams();
+          if (urlParams.showIndex !== null) {
+            window.showIndexData = urlParams.showIndex;
+            document.getElementById("show-index-data").checked =
+              urlParams.showIndex;
+          }
+
+          if (urlParams.markers && urlParams.markers.length > 0) {
+            showLoading("Loading markers...");
+            for (const marker of urlParams.markers) {
+              await showTimezone(marker.lat, marker.lng, map);
+            }
+            hideLoading();
+          }
+
+          if (urlParams.lat && urlParams.lng) {
+            map.setView(
+              [urlParams.lat, urlParams.lng],
+              urlParams.zoom || 2,
+              {
+                animate: false,
+              },
+            );
+          }
+        } catch (error) {
+          hideLoading();
+          showError(
+            "Failed to load WASM module. Please refresh the page.",
+          );
+          console.error("WASM loading error:", error);
+        }
+      }
+
+      // Share button enhancement
+      document.getElementById("share-button").addEventListener(
+        "click",
+        async () => {
+          const button = document.getElementById("share-button");
+          const originalText = button.textContent;
+
+          try {
+            const url = getShareableUrl();
+            await navigator.clipboard.writeText(url);
+            button.textContent = "Copied!";
+            setTimeout(() => {
+              button.textContent = originalText;
+            }, 2000);
+          } catch (err) {
+            console.error("Failed to copy URL:", err);
+            showError("Failed to copy URL. Please try again.");
+          }
+        },
+      );
+
+      // Initialize theme
+      initializeThemeSelector();
+      updateTimezoneLabelStyle();
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          removeLastMarker();
+        } else if (e.key === "Delete" && e.ctrlKey) {
+          clearAllMarkers();
+        }
+      });
 
       // Get URL parameters for initial map view
       const urlParams = getUrlParams();
@@ -403,30 +548,6 @@
 
       // Initial theme setup
       updateMapTheme(window.currentTheme);
-
-      // Theme toggle function
-      window.toggleTheme = function (mode) {
-        if (mode === "auto") {
-          localStorage.removeItem("theme");
-          if (
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-          ) {
-            window.currentTheme = "dark";
-          } else {
-            window.currentTheme = "light";
-          }
-        } else {
-          window.currentTheme = mode;
-          localStorage.setItem("theme", mode);
-        }
-
-        document.documentElement.setAttribute(
-          "data-theme",
-          window.currentTheme,
-        );
-        updateMapTheme(window.currentTheme);
-        updatePolygonColors(); // 更新多边形颜色
-      };
 
       // Listen for system theme changes
       window.matchMedia("(prefers-color-scheme: dark)")
@@ -496,20 +617,6 @@
         showTimezone(lat, lng, map);
       });
 
-      document.getElementById("share-button").addEventListener(
-        "click",
-        async () => {
-          const url = getShareableUrl();
-          try {
-            await navigator.clipboard.writeText(url);
-            alert("URL copied to clipboard!");
-          } catch (err) {
-            console.error("Failed to copy URL:", err);
-            alert("Failed to copy URL. Please try again.");
-          }
-        },
-      );
-
       // Initialize checkbox state
       document.getElementById("show-index-data").checked =
         window.showIndexData;
@@ -532,6 +639,11 @@
         --share-button-hover: #38a169;
         --link-color: #2b6cb0;
         --link-hover: #1a4971;
+        --error-bg: #feb2b2;
+        --error-text: #c53030;
+        --loading-bg: rgba(255, 255, 255, 0.9);
+        --loading-text: #1a202c;
+        --label-shadow-color: rgba(255, 255, 255, 0.9);
       }
 
       :root[data-theme="dark"] {
@@ -547,6 +659,11 @@
         --share-button-hover: #2f855a;
         --link-color: #63b3ed;
         --link-hover: #90cdf4;
+        --error-bg: #c53030;
+        --error-text: #fff;
+        --loading-bg: rgba(26, 32, 44, 0.9);
+        --loading-text: #e2e8f0;
+        --label-shadow-color: rgba(0, 0, 0, 0.9);
       }
 
       html,
@@ -702,10 +819,10 @@
         font-weight: 600;
         font-size: 12px;
         text-shadow:
-          2px 2px 3px rgba(255, 255, 255, 0.9),
-          -2px -2px 3px rgba(255, 255, 255, 0.9),
-          2px -2px 3px rgba(255, 255, 255, 0.9),
-          -2px 2px 3px rgba(255, 255, 255, 0.9);
+          2px 2px 3px var(--label-shadow-color),
+          -2px -2px 3px var(--label-shadow-color),
+          2px -2px 3px var(--label-shadow-color),
+          -2px 2px 3px var(--label-shadow-color);
       }
 
       .theme-controls {
@@ -729,12 +846,95 @@
         font-size: 14px;
         color: var(--text-color);
       }
+
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--loading-bg);
+        color: var(--loading-text);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        z-index: 2000;
+      }
+
+      #error-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--error-bg);
+        color: var(--error-text);
+        padding: 12px 24px;
+        border-radius: 4px;
+        display: none;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .marker-controls {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .marker-controls button {
+        flex: 1;
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -20px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      /* Skip navigation for accessibility */
+      .skip-nav {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--button-bg);
+        color: white;
+        padding: 8px;
+        z-index: 2000;
+        transition: top 0.2s;
+      }
+
+      .skip-nav:focus {
+        top: 0;
+      }
+
+      /* Focus styles for accessibility */
+      :focus-visible {
+        outline: 2px solid var(--input-focus);
+        outline-offset: 2px;
+      }
+
+      .controls-container input[type="checkbox"]:focus-visible + label {
+        outline: 2px solid var(--input-focus);
+        outline-offset: 2px;
+      }
     </style>
   </head>
 
   <body>
-    <div id="map"></div>
-    <div id="coordinate-inputs" class="panel">
+    <a href="#map" class="skip-nav">Skip to map</a>
+    <div id="loading-overlay" role="alert" aria-live="polite">Loading...</div>
+    <div id="error-message" role="alert" aria-live="assertive"></div>
+    <div id="map" role="application" aria-label="Interactive timezone map">
+    </div>
+    <div id="coordinate-inputs" class="panel" role="complementary">
       <div class="input-group">
         <label for="latitude">Lat:</label>
         <input
@@ -742,6 +942,7 @@
           id="latitude"
           name="latitude"
           placeholder="e.g. 40.7128"
+          aria-label="Latitude"
         />
       </div>
       <div class="input-group">
@@ -751,31 +952,53 @@
           id="longitude"
           name="longitude"
           placeholder="e.g. -74.0060"
+          aria-label="Longitude"
         />
       </div>
-      <button id="add-marker">Add Marker</button>
+      <button id="add-marker" aria-label="Add marker at specified coordinates">
+        Add Marker
+      </button>
+      <div class="marker-controls">
+        <button onclick="removeLastMarker()" aria-label="Remove last marker">
+          Undo Last
+        </button>
+        <button onclick="clearAllMarkers()" aria-label="Clear all markers">
+          Clear All
+        </button>
+      </div>
       <div class="controls-container">
         <input
           type="checkbox"
           id="show-index-data"
           class="toggle-switch"
           onchange="toggleIndexData()"
+          aria-label="Toggle index data visibility"
         />
         <label for="show-index-data" class="toggle-label"
         >Show Index Data</label>
       </div>
-      <button id="share-button" class="share-button">Share Current View</button>
+      <button
+        id="share-button"
+        class="share-button"
+        aria-label="Share current view"
+      >
+        Share Current View
+      </button>
       <div class="theme-controls">
         <label for="theme-select">Theme:</label>
-        <select id="theme-select" onchange="toggleTheme(this.value)">
+        <select
+          id="theme-select"
+          onchange="toggleTheme(this.value)"
+          aria-label="Select theme"
+        >
           <option value="auto">Auto (System)</option>
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>
       </div>
     </div>
-    <div id="mousecoord" class="panel"></div>
-    <footer class="panel">
+    <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
+    <footer class="panel" role="contentinfo">
       <ul>
         <li>
           <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank"
