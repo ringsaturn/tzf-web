@@ -1220,10 +1220,18 @@
         background: rgba(255, 255, 255, 0.8);
         border-radius: 4px;
         box-shadow: none;
+        color: #1a202c;
       }
 
       [data-theme="dark"] #mousecoord {
         background: rgba(0, 0, 0, 0.8);
+        color: #e2e8f0;
+      }
+
+      /* Keep light mode style in high contrast theme */
+      [data-theme="high-contrast"] #mousecoord {
+        background: rgba(255, 255, 255, 0.8);
+        color: #1a202c;
       }
 
       /* Hide mousecoord on touch devices */
