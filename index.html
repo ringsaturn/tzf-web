@@ -200,13 +200,6 @@
                 fillColor: timezoneColor,
                 fillOpacity: 0.15,
               },
-              onEachFeature: function (feature, layer) {
-                layer.bindTooltip(timezone.split("/").pop(), {
-                  permanent: true,
-                  direction: "center",
-                  className: "timezone-label",
-                });
-              },
             }).addTo(map);
             window.polygonLayers.set(timezone, timezoneLayer);
           }
@@ -537,7 +530,6 @@
         );
         updateMapTheme(window.currentTheme);
         updatePolygonColors();
-        updateTimezoneLabelStyle();
 
         // 更新所有标记的图标
         const newIcon = getCurrentMarkerIcon();
@@ -681,7 +673,6 @@
 
       // Initialize theme
       initializeThemeSelector();
-      updateTimezoneLabelStyle();
 
       // 添加键盘快捷键面板切换功能
       window.toggleShortcutsHelp = function () {
@@ -1097,7 +1088,6 @@
         --error-text: #c53030;
         --loading-bg: rgba(255, 255, 255, 0.9);
         --loading-text: #1a202c;
-        --label-shadow-color: rgba(255, 255, 255, 0.9);
       }
 
       :root[data-theme="dark"] {
@@ -1117,7 +1107,6 @@
         --error-text: #fff;
         --loading-bg: rgba(26, 32, 44, 0.9);
         --loading-text: #e2e8f0;
-        --label-shadow-color: rgba(0, 0, 0, 0.9);
       }
 
       :root[data-theme="high-contrast"] {
@@ -1137,7 +1126,6 @@
         --error-text: white;
         --loading-bg: rgba(0, 0, 0, 0.9);
         --loading-text: white;
-        --label-shadow-color: rgba(0, 0, 0, 0.9);
       }
 
       html,
@@ -1495,20 +1483,6 @@
         background-color: var(--share-button-hover);
       }
 
-      .timezone-label {
-        background: none;
-        border: none;
-        box-shadow: none;
-        color: var(--text-color);
-        font-weight: 600;
-        font-size: 12px;
-        text-shadow:
-          2px 2px 3px var(--label-shadow-color),
-          -2px -2px 3px var(--label-shadow-color),
-          2px -2px 3px var(--label-shadow-color),
-          -2px 2px 3px var(--label-shadow-color);
-      }
-
       .theme-controls {
         margin-top: 12px;
         padding-top: 12px;
@@ -1856,15 +1830,6 @@
           width: calc(100% - 40px);
           margin: 20px;
         }
-      }
-
-      /* 高对比度模式下的时区标签样式 */
-      [data-theme="high-contrast"] .timezone-label {
-        text-shadow: none;
-        background-color: transparent;
-        border: none;
-        padding: 2px 4px;
-        border-radius: 2px;
       }
 
       .keyboard-shortcuts {
