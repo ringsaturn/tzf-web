@@ -1639,7 +1639,7 @@
     <footer class="panel" role="contentinfo">
       <button 
         class="toggle-footer-button" 
-        onclick="document.querySelector('footer').classList.toggle('collapsed')"
+        onclick="event.stopPropagation(); document.querySelector('footer').classList.toggle('collapsed')"
         aria-label="Toggle footer visibility"
         title="Toggle footer visibility"
       ></button>
