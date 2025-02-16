@@ -941,7 +941,7 @@
 
           // 确保 html2canvas 已加载
           await loadHtml2Canvas();
-          
+
           // 创建一个新的隐藏的div用于截图
           const container = document.createElement("div");
           container.style.position = "absolute";
@@ -1038,7 +1038,8 @@
 
         return new Promise((resolve, reject) => {
           const script = document.createElement("script");
-          script.src = "https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js";
+          script.src =
+            "https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js";
           script.onload = () => resolve(window.html2canvas);
           script.onerror = reject;
           document.head.appendChild(script);
