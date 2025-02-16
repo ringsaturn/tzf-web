@@ -301,12 +301,19 @@
             await showTimezone(marker.lat, marker.lng, map);
           }
         }
+
+        // Set map view after loading all markers
+        if (urlParams.lat && urlParams.lng) {
+          map.setView([urlParams.lat, urlParams.lng], urlParams.zoom || 2, {
+            animate: false
+          });
+        }
       }
 
       // Get URL parameters for initial map view
       const urlParams = getUrlParams();
 
-      // Initialize map
+      // Initialize map with default view first
       var southWest = L.latLng(-90, -180);
       var northEast = L.latLng(90, 180);
       var bounds = L.latLngBounds(southWest, northEast);
@@ -318,12 +325,7 @@
         maxZoom: 18,
         minZoom: 3,
         cursor: true,
-      }).setView(
-        urlParams.lat && urlParams.lng
-          ? [urlParams.lat, urlParams.lng]
-          : [40.7128, -74.0060],
-        urlParams.zoom || 2,
-      );
+      }).setView([40.7128, -74.0060], 2);
 
       // Add base layer
       var layer = protomapsL.leafletLayer({
