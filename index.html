@@ -276,7 +276,9 @@
 
           const roundedLat = parseFloat(lat.toFixed(4));
           const roundedLng = parseFloat(lng.toFixed(4));
-          const marker = L.marker([roundedLat, roundedLng]);
+          const marker = L.marker([roundedLat, roundedLng], {
+            icon: getCurrentMarkerIcon(),
+          });
           const joinedTimezones = timezones.join(", ");
           const popupContent = `
             <strong>Location:</strong><br>
@@ -536,6 +538,12 @@
         updateMapTheme(window.currentTheme);
         updatePolygonColors();
         updateTimezoneLabelStyle();
+
+        // 更新所有标记的图标
+        const newIcon = getCurrentMarkerIcon();
+        window.markers.forEach((marker) => {
+          marker.setIcon(newIcon);
+        });
       };
 
       // Modified loadWasm function
@@ -722,14 +730,38 @@
 
       // 设置 Leaflet 默认图标路径
       delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
+
+      // 定义不同主题的标记图标
+      const markerIcons = {
+        light: L.icon({
+          iconUrl: "./marker_light.svg",
+          iconSize: [24, 32],
+          iconAnchor: [12, 32],
+          popupAnchor: [0, -32],
+        }),
+        dark: L.icon({
+          iconUrl: "./marker_dark.svg",
+          iconSize: [24, 32],
+          iconAnchor: [12, 32],
+          popupAnchor: [0, -32],
+        }),
+        high_contrast: L.icon({
+          iconUrl: "./marker_high_contrast.svg",
+          iconSize: [24, 32],
+          iconAnchor: [12, 32],
+          popupAnchor: [0, -32],
+        }),
+      };
+
+      // 获取当前主题的标记图标
+      function getCurrentMarkerIcon() {
+        if (window.currentTheme === "dark") {
+          return markerIcons.dark;
+        } else if (window.currentTheme === "high-contrast") {
+          return markerIcons.high_contrast;
+        }
+        return markerIcons.light;
+      }
 
       var map = L.map("map", {
         maxBounds: bounds,
