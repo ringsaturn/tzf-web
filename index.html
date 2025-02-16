@@ -1082,6 +1082,20 @@
         background: rgba(0, 0, 0, 0.8);
       }
 
+      /* Hide mousecoord on touch devices */
+      @media (hover: none) {
+        #mousecoord {
+          display: none;
+        }
+      }
+
+      /* Hide mousecoord on small screens */
+      @media (max-width: 768px) {
+        #mousecoord {
+          display: none;
+        }
+      }
+
       footer {
         position: absolute;
         bottom: 0;
