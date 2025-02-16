@@ -1609,8 +1609,8 @@
         list-style: none;
         padding: 0;
         margin: 0;
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 8px;
       }
 
@@ -1619,14 +1619,155 @@
       }
 
       .links-section a {
+        display: block;
         color: var(--link-color);
         text-decoration: none;
-        font-size: 12px;
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+      }
+
+      [data-theme="dark"] .links-section a {
+        background: rgba(255, 255, 255, 0.05);
       }
 
       .links-section a:hover {
-        text-decoration: underline;
+        text-decoration: none;
+        background: rgba(0, 0, 0, 0.1);
         color: var(--link-hover);
+      }
+
+      [data-theme="dark"] .links-section a:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .shortcuts-content {
+        background: var(--bg-color);
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        padding: 8px;
+        margin-top: 8px;
+      }
+
+      .shortcuts-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .shortcuts-content li {
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+
+      .shortcuts-content li:last-child {
+        margin-bottom: 0;
+      }
+
+      .panel-section {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--input-border);
+      }
+
+      .panel-section:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .panel-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-color);
+      }
+
+      .marker-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .marker-controls button {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .controls-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .toggle-switch {
+        margin-right: 10px;
+        width: 16px;
+        height: 16px;
+      }
+
+      .toggle-label {
+        font-size: 13px;
+        color: var(--text-color);
+      }
+
+      .links-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+      }
+
+      .links-section a {
+        display: block;
+        color: var(--link-color);
+        text-decoration: none;
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+      }
+
+      [data-theme="dark"] .links-section a {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .links-section a:hover {
+        text-decoration: none;
+        background: rgba(0, 0, 0, 0.1);
+        color: var(--link-hover);
+      }
+
+      [data-theme="dark"] .links-section a:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .shortcuts-content {
+        background: var(--bg-color);
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        padding: 8px;
+        margin-top: 8px;
+      }
+
+      .shortcuts-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .shortcuts-content li {
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+
+      .shortcuts-content li:last-child {
+        margin-bottom: 0;
       }
 
       footer {
@@ -1645,7 +1786,7 @@
       id="coordinate-inputs"
       class="panel"
       role="complementary"
-      aria-label="Coordinate input panel"
+      aria-label="Control panel"
     >
       <button
         class="toggle-panel-button"
@@ -1654,91 +1795,114 @@
         title="Toggle panel visibility"
       >
       </button>
-      <div class="input-group">
-        <label for="latitude">Lat:</label>
-        <input
-          type="number"
-          id="latitude"
-          name="latitude"
-          placeholder="e.g. 40.7128"
-          aria-label="Latitude"
-          step="0.0001"
-          min="-90"
-          max="90"
-          pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
-          title="Enter a latitude value between -90 and 90 degrees"
-          autocomplete="off"
-        />
-        <small class="input-help">Valid range: -90° to 90°</small>
-      </div>
-      <div class="input-group">
-        <label for="longitude">Lng:</label>
-        <input
-          type="number"
-          id="longitude"
-          name="longitude"
-          placeholder="e.g. -74.0060"
-          aria-label="Longitude"
-          step="0.0001"
-          min="-180"
-          max="180"
-          pattern="^-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180)(\.[0-9]{1,8})?$"
-          title="Enter a longitude value between -180 and 180 degrees"
-          autocomplete="off"
-        />
-        <small class="input-help">Valid range: -180° to 180°</small>
-      </div>
-      <button id="add-marker" aria-label="Add marker at specified coordinates">
-        Add Marker
-      </button>
-      <div class="marker-controls">
-        <button
-          onclick="removeLastMarker()"
-          aria-label="Remove last marker"
-          title="Press Command+Z to remove last marker"
-        >
-          Undo Last (⌘Z)
-        </button>
-        <button
-          onclick="clearAllMarkers()"
-          aria-label="Clear all markers"
-          title="Press Command+Shift+Backspace to clear all markers"
-        >
-          Clear All (⌘⇧⌫)
+
+      <!-- 坐标输入部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Coordinates</div>
+        <div class="input-group">
+          <label for="latitude">Lat:</label>
+          <input
+            type="number"
+            id="latitude"
+            name="latitude"
+            placeholder="e.g. 40.7128"
+            aria-label="Latitude"
+            step="0.0001"
+            min="-90"
+            max="90"
+            pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
+            title="Enter a latitude value between -90 and 90 degrees"
+            autocomplete="off"
+          />
+          <small class="input-help">Valid range: -90° to 90°</small>
+        </div>
+        <div class="input-group">
+          <label for="longitude">Lng:</label>
+          <input
+            type="number"
+            id="longitude"
+            name="longitude"
+            placeholder="e.g. -74.0060"
+            aria-label="Longitude"
+            step="0.0001"
+            min="-180"
+            max="180"
+            pattern="^-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180)(\.[0-9]{1,8})?$"
+            title="Enter a longitude value between -180 and 180 degrees"
+            autocomplete="off"
+          />
+          <small class="input-help">Valid range: -180° to 180°</small>
+        </div>
+        <button id="add-marker" aria-label="Add marker at specified coordinates">
+          Add Marker
         </button>
       </div>
-      <div class="controls-container">
-        <input
-          type="checkbox"
-          id="show-index-data"
-          class="toggle-switch"
-          onchange="toggleIndexData()"
-          aria-label="Toggle index data visibility"
-        />
-        <label for="show-index-data" class="toggle-label"
-        >Show Index Data</label>
+
+      <!-- 标记控制部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Marker Controls</div>
+        <div class="marker-controls">
+          <button
+            onclick="removeLastMarker()"
+            aria-label="Remove last marker"
+            title="Press Command+Z to remove last marker"
+          >
+            Undo Last (⌘Z)
+          </button>
+          <button
+            onclick="clearAllMarkers()"
+            aria-label="Clear all markers"
+            title="Press Command+Shift+Backspace to clear all markers"
+          >
+            Clear All (⌘⇧⌫)
+          </button>
+        </div>
+        <div class="controls-container">
+          <input
+            type="checkbox"
+            id="show-index-data"
+            class="toggle-switch"
+            onchange="toggleIndexData()"
+            aria-label="Toggle index data visibility"
+          />
+          <label for="show-index-data" class="toggle-label"
+          >Show Index Data</label>
+        </div>
       </div>
-      <button
-        id="share-button"
-        class="share-button"
-        aria-label="Share current view"
-      >
-        Share Current View
-      </button>
-      <div class="theme-controls">
-        <label for="theme-select">Theme:</label>
-        <select
-          id="theme-select"
-          onchange="toggleTheme(this.value)"
-          aria-label="Select theme"
+
+      <!-- 分享部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Share</div>
+        <button
+          id="share-button"
+          class="share-button"
+          aria-label="Share current view"
         >
-          <option value="auto">Auto (System)</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="high-contrast">High Contrast</option>
-        </select>
+          Share Current View
+        </button>
       </div>
-      <div class="keyboard-shortcuts" role="note">
+
+      <!-- 主题设置部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Appearance</div>
+        <div class="theme-controls">
+          <label for="theme-select">Theme:</label>
+          <select
+            id="theme-select"
+            onchange="toggleTheme(this.value)"
+            aria-label="Select theme"
+          >
+            <option value="auto">Auto (System)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="high-contrast">High Contrast</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 快捷键部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Help</div>
         <button
           class="help-button"
           aria-label="Show keyboard shortcuts"
@@ -1769,21 +1933,26 @@
           </ul>
         </div>
       </div>
-      <div class="links-section">
-        <ul>
-          <li>
-            <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank">Simple Page</a>
-          </li>
-          <li>
-            <a href="https://github.com/ringsaturn/tzf-web" target="_blank">tzf-web</a>
-          </li>
-          <li>
-            <a href="https://github.com/ringsaturn/tzf-wasm" target="_blank">tzf-wasm</a>
-          </li>
-          <li>
-            <a href="https://github.com/ringsaturn/tzf-rs" target="_blank">tzf-rs</a>
-          </li>
-        </ul>
+
+      <!-- 相关链接部分 -->
+      <div class="panel-section">
+        <div class="panel-section-title">Links</div>
+        <div class="links-section">
+          <ul>
+            <li>
+              <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank">Simple Mode</a>
+            </li>
+            <li>
+              <a href="https://github.com/ringsaturn/tzf-web" target="_blank">tzf-web</a>
+            </li>
+            <li>
+              <a href="https://github.com/ringsaturn/tzf-wasm" target="_blank">tzf-wasm</a>
+            </li>
+            <li>
+              <a href="https://github.com/ringsaturn/tzf-rs" target="_blank">tzf-rs</a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
