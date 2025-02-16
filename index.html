@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://api.protomaps.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://api.protomaps.com https://unpkg.com; connect-src 'self' https://unpkg.com https://api.protomaps.com;">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://unpkg.com https://api.protomaps.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://api.protomaps.com https://unpkg.com; connect-src 'self' https://unpkg.com https://api.protomaps.com;"
+    >
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <!-- <meta http-equiv="X-Frame-Options" content="DENY"> -->
     <meta http-equiv="Permissions-Policy" content="geolocation=self">
@@ -49,17 +52,34 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <script
+      src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"
+    />
     <script
       src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"
     ></script>
 
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://api.protomaps.com">
-    <link rel="preload" href="https://unpkg.com/tzf-wasm@0.1.7/tzf_wasm.js" as="script">
-    <link rel="preload" href="https://unpkg.com/leaflet/dist/leaflet.css" as="style">
-    <link rel="preload" href="https://unpkg.com/leaflet/dist/leaflet.js" as="script">
+    <link
+      rel="preload"
+      href="https://unpkg.com/tzf-wasm@0.1.7/tzf_wasm.js"
+      as="script"
+    >
+    <link
+      rel="preload"
+      href="https://unpkg.com/leaflet/dist/leaflet.css"
+      as="style"
+    >
+    <link
+      rel="preload"
+      href="https://unpkg.com/leaflet/dist/leaflet.js"
+      as="script"
+    >
 
     <script type="module">
       import init, {
@@ -166,7 +186,8 @@
 
         try {
           // 加载详细边界
-          const geojsonPath = `./timezone-polygons/${formattedTimezone}.geojson`;
+          const geojsonPath =
+            `./timezone-polygons/${formattedTimezone}.geojson`;
           const response = await fetch(geojsonPath);
           if (response.ok) {
             const geojsonData = await response.json();
@@ -191,7 +212,8 @@
           }
 
           // 加载索引边界
-          const indexGeojsonPath = `./timezone-polygons-index/${formattedTimezone}.geojson`;
+          const indexGeojsonPath =
+            `./timezone-polygons-index/${formattedTimezone}.geojson`;
           const indexResponse = await fetch(indexGeojsonPath);
           if (indexResponse.ok) {
             const indexGeojsonData = await indexResponse.json();
@@ -212,39 +234,42 @@
             }
           }
         } catch (error) {
-          console.error(`Error loading GeoJSON for ${timezone}:`, error);
+          console.error(
+            `Error loading GeoJSON for ${timezone}:`,
+            error,
+          );
         }
       }
 
       // 显示时区信息的函数
       async function showTimezone(lat, lng, map) {
-        console.log('showTimezone called with:', { lat, lng });
-        
+        console.log("showTimezone called with:", { lat, lng });
+
         if (!window.finder) {
-          console.error('WASM finder not initialized');
+          console.error("WASM finder not initialized");
           showError("WASM module not loaded yet. Please wait...");
           return;
         }
 
         if (isNaN(lng) || isNaN(lat)) {
-          console.error('Invalid coordinates:', { lat, lng });
+          console.error("Invalid coordinates:", { lat, lng });
           showError("Invalid coordinates");
           return;
         }
 
         if (lng < -180 || lng > 180 || lat < -90 || lat > 90) {
-          console.error('Coordinates out of range:', { lat, lng });
+          console.error("Coordinates out of range:", { lat, lng });
           showError("Coordinates out of valid range");
           return;
         }
 
         try {
-          console.log('Getting timezone names for:', { lat, lng });
+          console.log("Getting timezone names for:", { lat, lng });
           const timezones = window.finder.get_tz_names(lng, lat);
-          console.log('Found timezones:', timezones);
+          console.log("Found timezones:", timezones);
 
           if (!timezones || timezones.length === 0) {
-            console.error('No timezone found');
+            console.error("No timezone found");
             showError("No timezone found for this location");
             return;
           }
@@ -257,15 +282,17 @@
             <strong>Location:</strong><br>
             Latitude: ${roundedLat}<br>
             Longitude: ${roundedLng}<br>
-            <strong>Timezone${timezones.length > 1 ? 's' : ''}:</strong><br>
+            <strong>Timezone${
+            timezones.length > 1 ? "s" : ""
+          }:</strong><br>
             ${joinedTimezones}
           `;
-          
+
           marker.bindPopup(popupContent);
           marker.addTo(map);
           marker.openPopup();
           window.markers.push(marker);
-          console.log('Marker added to map');
+          console.log("Marker added to map");
 
           // 加载时区多边形
           for (const timezone of timezones) {
@@ -276,15 +303,17 @@
           updateUrlParams();
         } catch (error) {
           console.error("Error in showTimezone:", error);
-          showError("Failed to get timezone information: " + error.message);
+          showError(
+            "Failed to get timezone information: " + error.message,
+          );
         }
       }
 
       // 切换索引数据显示
-      window.toggleIndexData = function() {
+      window.toggleIndexData = function () {
         window.showIndexData = !window.showIndexData;
         localStorage.setItem("showIndexData", window.showIndexData);
-        
+
         window.indexLayers.forEach((layer, timezone) => {
           if (window.showIndexData) {
             layer.addTo(map);
@@ -292,52 +321,55 @@
             map.removeLayer(layer);
           }
         });
-      }
+      };
 
       // 清除所有标记和多边形
-      window.clearAllMarkers = function() {
-        window.markers.forEach(marker => map.removeLayer(marker));
+      window.clearAllMarkers = function () {
+        window.markers.forEach((marker) => map.removeLayer(marker));
         window.markers = [];
-        
+
         // 清除所有多边形和索引图层
         window.polygonLayers.forEach((layer, timezone) => {
           map.removeLayer(layer);
         });
         window.polygonLayers.clear();
-        
+
         window.indexLayers.forEach((layer, timezone) => {
           map.removeLayer(layer);
         });
         window.indexLayers.clear();
-        
+
         window.loadedTimezones.clear();
         window.timezoneColors.clear();
         colorIndex = 0;
-        
+
         updateUrlParams();
-      }
+      };
 
       // 移除最后一个标记和相关的多边形
-      window.removeLastMarker = function() {
+      window.removeLastMarker = function () {
         if (window.markers.length > 0) {
           const marker = window.markers.pop();
           map.removeLayer(marker);
-          
+
           // 检查是否还有其他标记使用相同的时区
           const remainingTimezones = new Set();
-          window.markers.forEach(m => {
+          window.markers.forEach((m) => {
             const latlng = m.getLatLng();
-            const tzs = window.finder.get_tz_names(latlng.lng, latlng.lat);
-            tzs.forEach(tz => remainingTimezones.add(tz));
+            const tzs = window.finder.get_tz_names(
+              latlng.lng,
+              latlng.lat,
+            );
+            tzs.forEach((tz) => remainingTimezones.add(tz));
           });
-          
+
           // 移除不再使用的时区多边形和索引图层
           window.polygonLayers.forEach((layer, timezone) => {
             if (!remainingTimezones.has(timezone)) {
               map.removeLayer(layer);
               window.polygonLayers.delete(timezone);
               window.loadedTimezones.delete(timezone);
-              
+
               const indexLayer = window.indexLayers.get(timezone);
               if (indexLayer) {
                 map.removeLayer(indexLayer);
@@ -345,30 +377,31 @@
               }
             }
           });
-          
+
           updateUrlParams();
         }
-      }
+      };
 
       // 更新 URL 参数
       function updateUrlParams() {
         const params = new URLSearchParams(window.location.search);
-        const markers = window.markers.map(marker => {
+        const markers = window.markers.map((marker) => {
           const latlng = marker.getLatLng();
           return {
             lat: latlng.lat,
-            lng: latlng.lng
+            lng: latlng.lng,
           };
         });
-        
+
         if (markers.length > 0) {
-          params.set('markers', JSON.stringify(markers));
+          params.set("markers", JSON.stringify(markers));
         } else {
-          params.delete('markers');
+          params.delete("markers");
         }
-        
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        window.history.replaceState({}, '', newUrl);
+
+        const newUrl =
+          `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, "", newUrl);
       }
 
       // 获取 URL 参数
@@ -379,21 +412,29 @@
           lat: null,
           lng: null,
           zoom: null,
-          showIndex: null
+          showIndex: null,
         };
 
-        if (params.has('markers')) {
+        if (params.has("markers")) {
           try {
-            result.markers = JSON.parse(params.get('markers'));
+            result.markers = JSON.parse(params.get("markers"));
           } catch (e) {
-            console.error('Failed to parse markers from URL:', e);
+            console.error("Failed to parse markers from URL:", e);
           }
         }
 
-        if (params.has('lat')) result.lat = parseFloat(params.get('lat'));
-        if (params.has('lng')) result.lng = parseFloat(params.get('lng'));
-        if (params.has('zoom')) result.zoom = parseInt(params.get('zoom'));
-        if (params.has('showIndex')) result.showIndex = params.get('showIndex') === 'true';
+        if (params.has("lat")) {
+          result.lat = parseFloat(params.get("lat"));
+        }
+        if (params.has("lng")) {
+          result.lng = parseFloat(params.get("lng"));
+        }
+        if (params.has("zoom")) {
+          result.zoom = parseInt(params.get("zoom"));
+        }
+        if (params.has("showIndex")) {
+          result.showIndex = params.get("showIndex") === "true";
+        }
 
         return result;
       }
@@ -401,51 +442,55 @@
       // 获取可分享的 URL
       function getShareableUrl() {
         const params = new URLSearchParams();
-        
+
         if (window.markers.length > 0) {
-          const markers = window.markers.map(marker => {
+          const markers = window.markers.map((marker) => {
             const latlng = marker.getLatLng();
             return {
               lat: latlng.lat,
-              lng: latlng.lng
+              lng: latlng.lng,
             };
           });
-          params.set('markers', JSON.stringify(markers));
+          params.set("markers", JSON.stringify(markers));
         }
-        
+
         const center = map.getCenter();
-        params.set('lat', center.lat.toFixed(6));
-        params.set('lng', center.lng.toFixed(6));
-        params.set('zoom', map.getZoom().toString());
-        
+        params.set("lat", center.lat.toFixed(6));
+        params.set("lng", center.lng.toFixed(6));
+        params.set("zoom", map.getZoom().toString());
+
         if (window.showIndexData) {
-          params.set('showIndex', 'true');
+          params.set("showIndex", "true");
         }
-        
+
         return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
       }
 
       // 显示错误信息
       function showError(message) {
-        const errorElement = document.getElementById('error-message');
+        const errorElement = document.getElementById("error-message");
         errorElement.textContent = message;
-        errorElement.style.display = 'block';
+        errorElement.style.display = "block";
         setTimeout(() => {
-          errorElement.style.display = 'none';
+          errorElement.style.display = "none";
         }, 3000);
       }
 
       // 显示加载信息
       function showLoading(message) {
-        const loadingElement = document.getElementById('loading-overlay');
+        const loadingElement = document.getElementById(
+          "loading-overlay",
+        );
         loadingElement.textContent = message;
-        loadingElement.style.display = 'block';
+        loadingElement.style.display = "block";
       }
 
       // 隐藏加载信息
       function hideLoading() {
-        const loadingElement = document.getElementById('loading-overlay');
-        loadingElement.style.display = 'none';
+        const loadingElement = document.getElementById(
+          "loading-overlay",
+        );
+        loadingElement.style.display = "none";
       }
 
       // Theme initialization
@@ -497,34 +542,37 @@
       async function loadWasm() {
         let retryCount = 0;
         const maxRetries = 3;
-        
+
         async function tryLoadWasm() {
           try {
-            console.log('Starting WASM module loading...');
+            console.log("Starting WASM module loading...");
             showLoading("Loading WASM module... Please wait");
-            
+
             // Ensure the WASM module is properly imported
-            if (typeof init === 'undefined') {
-              throw new Error('WASM init function not found');
+            if (typeof init === "undefined") {
+              throw new Error("WASM init function not found");
             }
-            
+
             await init();
-            console.log('WASM module initialized');
-            
-            if (typeof WasmFinder === 'undefined') {
-              throw new Error('WasmFinder not found');
+            console.log("WASM module initialized");
+
+            if (typeof WasmFinder === "undefined") {
+              throw new Error("WasmFinder not found");
             }
-            
+
             window.finder = new WasmFinder();
-            console.log('WasmFinder instance created');
+            console.log("WasmFinder instance created");
             hideLoading();
 
             // 测试 WASM 功能
             try {
               const testTimezones = window.finder.get_tz_names(0, 0);
-              console.log('WASM test successful, found timezones:', testTimezones);
+              console.log(
+                "WASM test successful, found timezones:",
+                testTimezones,
+              );
             } catch (testError) {
-              console.error('WASM test failed:', testError);
+              console.error("WASM test failed:", testError);
               throw testError; // Re-throw to trigger retry
             }
 
@@ -532,7 +580,9 @@
             const urlParams = getUrlParams();
             if (urlParams.showIndex !== null) {
               window.showIndexData = urlParams.showIndex;
-              const checkbox = document.getElementById("show-index-data");
+              const checkbox = document.getElementById(
+                "show-index-data",
+              );
               if (checkbox) {
                 checkbox.checked = urlParams.showIndex;
               }
@@ -558,20 +608,24 @@
           } catch (error) {
             console.error("WASM loading error:", error);
             retryCount++;
-            
+
             if (retryCount < maxRetries) {
-              console.log(`Retrying WASM load (${retryCount}/${maxRetries})...`);
-              showLoading(`Loading failed. Retrying (${retryCount}/${maxRetries})...`);
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              console.log(
+                `Retrying WASM load (${retryCount}/${maxRetries})...`,
+              );
+              showLoading(
+                `Loading failed. Retrying (${retryCount}/${maxRetries})...`,
+              );
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               return tryLoadWasm();
             } else {
-              console.error('All WASM load retries failed');
+              console.error("All WASM load retries failed");
               hideLoading();
               showError(
                 "Failed to load WASM module after multiple attempts. Please check your network connection and refresh the page.",
               );
-              const errorContainer = document.createElement('div');
-              errorContainer.className = 'error-container panel';
+              const errorContainer = document.createElement("div");
+              errorContainer.className = "error-container panel";
               errorContainer.innerHTML = `
                 <h3>Loading Error</h3>
                 <p>We couldn't load some required resources. This might be because:</p>
@@ -622,10 +676,10 @@
       updateTimezoneLabelStyle();
 
       // 添加键盘快捷键面板切换功能
-      window.toggleShortcutsHelp = function() {
-        const panel = document.getElementById('shortcuts-panel');
+      window.toggleShortcutsHelp = function () {
+        const panel = document.getElementById("shortcuts-panel");
         panel.hidden = !panel.hidden;
-      }
+      };
 
       // 添加输入验证
       function validateCoordinate(input, min, max) {
@@ -633,22 +687,30 @@
         if (isNaN(value)) {
           input.setCustomValidity(`Please enter a valid number`);
         } else if (value < min || value > max) {
-          input.setCustomValidity(`Value must be between ${min} and ${max}`);
+          input.setCustomValidity(
+            `Value must be between ${min} and ${max}`,
+          );
         } else {
-          input.setCustomValidity('');
+          input.setCustomValidity("");
         }
         input.reportValidity();
         return !isNaN(value) && value >= min && value <= max;
       }
 
       // 为输入框添加验证
-      document.getElementById('latitude').addEventListener('input', function() {
-        validateCoordinate(this, -90, 90);
-      });
+      document.getElementById("latitude").addEventListener(
+        "input",
+        function () {
+          validateCoordinate(this, -90, 90);
+        },
+      );
 
-      document.getElementById('longitude').addEventListener('input', function() {
-        validateCoordinate(this, -180, 180);
-      });
+      document.getElementById("longitude").addEventListener(
+        "input",
+        function () {
+          validateCoordinate(this, -180, 180);
+        },
+      );
 
       // Get URL parameters for initial map view
       const urlParams = getUrlParams();
@@ -661,9 +723,12 @@
       // 设置 Leaflet 默认图标路径
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
-          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+        iconRetinaUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
       var map = L.map("map", {
@@ -673,23 +738,23 @@
         maxZoom: 18,
         minZoom: 3,
         zoomControl: false,
-        tap: false // Disable tap handler to fix mobile issues
+        tap: false, // Disable tap handler to fix mobile issues
       }).setView([40.7128, -74.0060], 2);
 
       // 添加当前位置按钮
       const locateControl = L.control.locate({
-        position: 'topright',
+        position: "topright",
         strings: {
-          title: "Show me where I am"
+          title: "Show me where I am",
         },
         locateOptions: {
           maxZoom: 18,
-          enableHighAccuracy: true
-        }
+          enableHighAccuracy: true,
+        },
       }).addTo(map);
 
       // 监听定位成功事件
-      map.on('locationfound', function(e) {
+      map.on("locationfound", function (e) {
         showTimezone(e.latitude, e.longitude, map);
       });
 
@@ -709,7 +774,7 @@
       L.control.scale({
         metric: true,
         imperial: true,
-        position: 'bottomright'
+        position: "bottomright",
       }).addTo(map);
 
       // Theme state
@@ -761,15 +826,15 @@
 
       // 优化移动端触摸体验
       if (L.Browser.touch) {
-        map.on('drag', function(e) {
+        map.on("drag", function (e) {
           if (e.target._container) {
-            e.target._container.style.cursor = 'grabbing';
+            e.target._container.style.cursor = "grabbing";
           }
         });
-        
-        map.on('dragend', function(e) {
+
+        map.on("dragend", function (e) {
           if (e.target._container) {
-            e.target._container.style.cursor = '';
+            e.target._container.style.cursor = "";
           }
         });
       }
@@ -816,7 +881,7 @@
       });
 
       map.on("click", function (e) {
-        console.log('Map clicked:', e.latlng);
+        console.log("Map clicked:", e.latlng);
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
         showTimezone(lat, lng, map);
@@ -830,29 +895,32 @@
       loadWasm();
 
       // 添加键盘事件监听
-      document.addEventListener('keydown', function(e) {
+      document.addEventListener("keydown", function (e) {
         // Mac 上使用 Command+Z 撤销
-        if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        if ((e.metaKey || e.ctrlKey) && e.key === "z") {
           e.preventDefault();
           removeLastMarker();
         }
         // Mac 上使用 Command+Shift+Delete 清除所有
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Backspace') {
+        if (
+          (e.metaKey || e.ctrlKey) && e.shiftKey &&
+          e.key === "Backspace"
+        ) {
           e.preventDefault();
           clearAllMarkers();
         }
         // 阻止浏览器默认的缩放行为，并触发地图缩放
         if ((e.metaKey || e.ctrlKey)) {
-          if (e.key === '=' || e.key === '+' || e.key === 'Equal') {
+          if (e.key === "=" || e.key === "+" || e.key === "Equal") {
             e.preventDefault();
             map.zoomIn();
-          } else if (e.key === '-' || e.key === 'Minus') {
+          } else if (e.key === "-" || e.key === "Minus") {
             e.preventDefault();
             map.zoomOut();
-          } else if (e.key === ',' || e.key === 'Comma') {
+          } else if (e.key === "," || e.key === "Comma") {
             e.preventDefault();
             map.zoomOut();
-          } else if (e.key === '.' || e.key === 'Period') {
+          } else if (e.key === "." || e.key === "Period") {
             e.preventDefault();
             map.zoomIn();
           }
@@ -860,7 +928,7 @@
       });
 
       // 添加滚轮缩放事件监听
-      document.addEventListener('wheel', function(e) {
+      document.addEventListener("wheel", function (e) {
         if (e.metaKey || e.ctrlKey) {
           e.preventDefault();
         }
@@ -1534,13 +1602,19 @@
     <div id="error-message" role="alert" aria-live="assertive"></div>
     <div id="map" role="application" aria-label="Interactive timezone map">
     </div>
-    <div id="coordinate-inputs" class="panel" role="complementary" aria-label="Coordinate input panel">
-      <button 
-        class="toggle-panel-button" 
+    <div
+      id="coordinate-inputs"
+      class="panel"
+      role="complementary"
+      aria-label="Coordinate input panel"
+    >
+      <button
+        class="toggle-panel-button"
         onclick="document.getElementById('coordinate-inputs').classList.toggle('collapsed')"
         aria-label="Toggle panel visibility"
         title="Toggle panel visibility"
-      ></button>
+      >
+      </button>
       <div class="input-group">
         <label for="latitude">Lat:</label>
         <input
@@ -1579,10 +1653,18 @@
         Add Marker
       </button>
       <div class="marker-controls">
-        <button onclick="removeLastMarker()" aria-label="Remove last marker" title="Press Command+Z to remove last marker">
+        <button
+          onclick="removeLastMarker()"
+          aria-label="Remove last marker"
+          title="Press Command+Z to remove last marker"
+        >
           Undo Last (⌘Z)
         </button>
-        <button onclick="clearAllMarkers()" aria-label="Clear all markers" title="Press Command+Shift+Backspace to clear all markers">
+        <button
+          onclick="clearAllMarkers()"
+          aria-label="Clear all markers"
+          title="Press Command+Shift+Backspace to clear all markers"
+        >
           Clear All (⌘⇧⌫)
         </button>
       </div>
@@ -1594,7 +1676,8 @@
           onchange="toggleIndexData()"
           aria-label="Toggle index data visibility"
         />
-        <label for="show-index-data" class="toggle-label">Show Index Data</label>
+        <label for="show-index-data" class="toggle-label"
+        >Show Index Data</label>
       </div>
       <button
         id="share-button"
@@ -1617,8 +1700,8 @@
         </select>
       </div>
       <div class="keyboard-shortcuts" role="note">
-        <button 
-          class="help-button" 
+        <button
+          class="help-button"
           aria-label="Show keyboard shortcuts"
           onclick="toggleShortcutsHelp()"
         >
@@ -1626,23 +1709,37 @@
         </button>
         <div id="shortcuts-panel" class="shortcuts-content" hidden>
           <ul>
-            <li><kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker</li>
-            <li><kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers</li>
-            <li><kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in</li>
-            <li><kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out</li>
-            <li><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> - Pan map</li>
+            <li>
+              <kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker
+            </li>
+            <li>
+              <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers
+            </li>
+            <li>
+              <kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in
+            </li>
+            <li>
+              <kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out
+            </li>
+            <li>
+              <kbd>←</kbd>
+              <kbd>↑</kbd>
+              <kbd>→</kbd>
+              <kbd>↓</kbd> - Pan map
+            </li>
           </ul>
         </div>
       </div>
     </div>
     <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
     <footer class="panel" role="contentinfo">
-      <button 
-        class="toggle-footer-button" 
+      <button
+        class="toggle-footer-button"
         onclick="event.stopPropagation(); document.querySelector('footer').classList.toggle('collapsed')"
         aria-label="Toggle footer visibility"
         title="Toggle footer visibility"
-      ></button>
+      >
+      </button>
       <ul>
         <li>
           <a href="https://ringsaturn.github.io/tzf-web/simple" target="_blank"
