@@ -828,6 +828,43 @@
 
       // Load WASM
       loadWasm();
+
+      // 添加键盘事件监听
+      document.addEventListener('keydown', function(e) {
+        // Mac 上使用 Command+Z 撤销
+        if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+          e.preventDefault();
+          removeLastMarker();
+        }
+        // Mac 上使用 Command+Shift+Delete 清除所有
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Backspace') {
+          e.preventDefault();
+          clearAllMarkers();
+        }
+        // 阻止浏览器默认的缩放行为，并触发地图缩放
+        if ((e.metaKey || e.ctrlKey)) {
+          if (e.key === '=' || e.key === '+' || e.key === 'Equal') {
+            e.preventDefault();
+            map.zoomIn();
+          } else if (e.key === '-' || e.key === 'Minus') {
+            e.preventDefault();
+            map.zoomOut();
+          } else if (e.key === ',' || e.key === 'Comma') {
+            e.preventDefault();
+            map.zoomOut();
+          } else if (e.key === '.' || e.key === 'Period') {
+            e.preventDefault();
+            map.zoomIn();
+          }
+        }
+      });
+
+      // 添加滚轮缩放事件监听
+      document.addEventListener('wheel', function(e) {
+        if (e.metaKey || e.ctrlKey) {
+          e.preventDefault();
+        }
+      }, { passive: false });
     </script>
 
     <style>
@@ -923,6 +960,45 @@
         top: 20px;
         left: 20px;
         max-width: 300px;
+        transition: transform 0.3s ease;
+      }
+
+      #coordinate-inputs.collapsed {
+        transform: translateX(-100%);
+      }
+
+      .toggle-panel-button {
+        position: absolute;
+        right: -30px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 60px;
+        background-color: var(--panel-bg);
+        border: none;
+        border-radius: 0 8px 8px 0;
+        box-shadow: var(--panel-shadow);
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .toggle-panel-button::after {
+        content: "◀";
+        font-size: 14px;
+        color: var(--text-color);
+      }
+
+      #coordinate-inputs.collapsed .toggle-panel-button::after {
+        content: "▶";
+      }
+
+      [data-theme="high-contrast"] .toggle-panel-button {
+        border: 2px solid white;
+        border-left: none;
       }
 
       #mousecoord {
@@ -1421,6 +1497,12 @@
     <div id="map" role="application" aria-label="Interactive timezone map">
     </div>
     <div id="coordinate-inputs" class="panel" role="complementary" aria-label="Coordinate input panel">
+      <button 
+        class="toggle-panel-button" 
+        onclick="document.getElementById('coordinate-inputs').classList.toggle('collapsed')"
+        aria-label="Toggle panel visibility"
+        title="Toggle panel visibility"
+      ></button>
       <div class="input-group">
         <label for="latitude">Lat:</label>
         <input
@@ -1459,11 +1541,11 @@
         Add Marker
       </button>
       <div class="marker-controls">
-        <button onclick="removeLastMarker()" aria-label="Remove last marker" title="Press Esc to remove last marker">
-          Undo Last (Esc)
+        <button onclick="removeLastMarker()" aria-label="Remove last marker" title="Press Command+Z to remove last marker">
+          Undo Last (⌘Z)
         </button>
-        <button onclick="clearAllMarkers()" aria-label="Clear all markers" title="Press Ctrl+Delete to clear all markers">
-          Clear All (Ctrl+Del)
+        <button onclick="clearAllMarkers()" aria-label="Clear all markers" title="Press Command+Shift+Backspace to clear all markers">
+          Clear All (⌘⇧⌫)
         </button>
       </div>
       <div class="controls-container">
@@ -1506,10 +1588,10 @@
         </button>
         <div id="shortcuts-panel" class="shortcuts-content" hidden>
           <ul>
-            <li><kbd>Esc</kbd> - Remove last marker</li>
-            <li><kbd>Ctrl</kbd> + <kbd>Del</kbd> - Clear all markers</li>
-            <li><kbd>+</kbd> - Zoom in</li>
-            <li><kbd>-</kbd> - Zoom out</li>
+            <li><kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker</li>
+            <li><kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers</li>
+            <li><kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in</li>
+            <li><kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out</li>
             <li><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> - Pan map</li>
           </ul>
         </div>
