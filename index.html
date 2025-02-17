@@ -395,10 +395,13 @@
           const timeInterval = setInterval(updateTime, 1000);
 
           const popupContent = document.createElement("div");
+          popupContent.className = "marker-popup";
           popupContent.innerHTML = `
             <strong>Location:</strong><br>
-            Latitude: ${roundedLat}<br>
-            Longitude: ${roundedLng}
+            <div class="coordinate-info">
+              Latitude:  ${roundedLat}<br>
+              Longitude: ${roundedLng}
+            </div>
           `;
 
           popupContent.appendChild(timeDiv);
@@ -2207,6 +2210,46 @@
         background: black;
         color: white;
         border: 1px solid white;
+      }
+
+      .marker-popup {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Monaco,
+          Consolas,
+          "Liberation Mono",
+          "Courier New",
+          monospace;
+        font-size: 13px;
+      }
+
+      .coordinate-info {
+        padding: 4px 0;
+      }
+
+      .marker-time {
+        margin-top: 8px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        font-size: 13px;
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Monaco,
+          Consolas,
+          "Liberation Mono",
+          "Courier New",
+          monospace;
+      }
+
+      .time-entry {
+        margin-bottom: 4px;
+        padding: 4px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       }
     </style>
   </head>
