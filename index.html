@@ -10,30 +10,85 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <!-- <meta http-equiv="X-Frame-Options" content="DENY"> -->
     <meta http-equiv="Permissions-Policy" content="geolocation=self">
-    <title>tzf-web</title>
+    <title>
+      tzf-web - Interactive Timezone Finder Map | Find Timezone by Location
+    </title>
     <meta name="author" content="ringsaturn" />
-    <meta name="keywords" content="tzf, timezone, wasm, leaflet, protomaps" />
+    <meta
+      name="keywords"
+      content="timezone finder, timezone map, interactive map, WebAssembly timezone, timezone lookup, geographic timezone, tzf, leaflet map, protomaps"
+    />
     <meta
       name="description"
-      content="A simple web app to find the timezone of a location using WebAssembly."
+      content="Find the timezone of any location with our interactive map. Powered by a WebAssembly module for fast timezone lookups. Features include multiple markers, dark mode, and high-contrast accessibility options."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://ringsaturn.github.io/tzf-web/" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@ringsaturn_me" />
+    <meta
+      name="twitter:title"
+      content="Interactive Timezone Finder Map | tzf-web"
+    />
+    <meta
+      name="twitter:description"
+      content="Find the timezone of any location with our interactive map. Powered by WebAssembly for fast timezone lookups."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ringsaturn.github.io/tzf-web/android-chrome-512x512.png"
     />
 
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@ringsaturn_me" />
-
-    <meta name="og:image" content="./android-chrome-512x512.png" />
     <meta property="og:url" content="https://ringsaturn.github.io/tzf-web/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="tzf-web" />
+    <meta
+      property="og:title"
+      content="Interactive Timezone Finder Map | tzf-web"
+    />
+    <meta
+      property="og:image"
+      content="https://ringsaturn.github.io/tzf-web/android-chrome-512x512.png"
+    />
     <meta
       property="og:description"
-      content="A simple web app to find the timezone of a location using WebAssembly."
+      content="Find the timezone of any location with our interactive map. Powered by WebAssembly for fast timezone lookups. Features include multiple markers, dark mode, and high-contrast accessibility options."
     />
     <meta property="og:site_name" content="tzf-web" />
     <meta
       name="google-site-verification"
       content="56YBydpJAlvdsl_gIhxrt5ZyGApdYN9qSSbV2BTCVEg"
     />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "tzf-web",
+        "url": "https://ringsaturn.github.io/tzf-web/",
+        "description": "An interactive web application for finding timezones by location on a map.",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "author": {
+          "@type": "Person",
+          "name": "ringsaturn",
+          "url": "https://github.com/ringsaturn"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "browserRequirements": "Requires WebAssembly support",
+        "featureList": [
+          "Interactive map interface",
+          "Multiple marker support",
+          "Dark mode and high contrast themes",
+          "WebAssembly-powered timezone lookup",
+          "Accessibility features"
+        ]
+      }
+    </script>
 
     <link
       rel="apple-touch-icon"
@@ -1933,205 +1988,316 @@
         border-radius: 4px;
         z-index: 1000;
       }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      main {
+        height: 100%;
+        width: 100%;
+        position: relative;
+      }
+
+      footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--panel-bg);
+        padding: 8px;
+        font-size: 12px;
+        text-align: center;
+        z-index: 1000;
+      }
+
+      footer p {
+        margin: 0;
+        color: var(--text-color);
+      }
+
+      footer a {
+        color: var(--link-color);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        color: var(--link-hover);
+        text-decoration: underline;
+      }
+
+      .panel-section h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+        color: var(--text-color);
+      }
+
+      /* Dark mode adjustments */
+      [data-theme="dark"] footer {
+        background: rgba(45, 55, 72, 0.9);
+      }
+
+      /* High contrast mode adjustments */
+      [data-theme="high-contrast"] footer {
+        background: black;
+        border-top: 1px solid white;
+      }
+
+      [data-theme="high-contrast"] footer a {
+        color: yellow;
+      }
+
+      /* Mobile optimizations */
+      @media (max-width: 768px) {
+        footer {
+          font-size: 10px;
+          padding: 6px;
+        }
+
+        .panel-section h2 {
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+      }
     </style>
   </head>
 
   <body>
     <a href="#map" class="skip-nav">Skip to map</a>
+    <header class="visually-hidden">
+      <h1>Interactive Timezone Finder Map</h1>
+      <p>
+        Find the timezone of any location using our interactive
+        WebAssembly-powered map.
+      </p>
+    </header>
+
     <div id="loading-overlay" role="alert" aria-live="polite">Loading...</div>
     <div id="error-message" role="alert" aria-live="assertive"></div>
-    <div id="map" role="application" aria-label="Interactive timezone map">
-    </div>
-    <div
-      id="coordinate-inputs"
-      class="panel"
-      role="complementary"
-      aria-label="Control panel"
-    >
-      <button
-        class="toggle-panel-button"
-        onclick="document.getElementById('coordinate-inputs').classList.toggle('expanded')"
-        aria-label="Toggle panel visibility"
-        title="Toggle panel visibility"
+
+    <main>
+      <div id="map" role="application" aria-label="Interactive timezone map">
+      </div>
+
+      <aside
+        id="coordinate-inputs"
+        class="panel"
+        role="complementary"
+        aria-label="Control panel"
       >
-      </button>
-
-      <!-- 坐标输入部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Coordinates</div>
-        <div class="input-group">
-          <label for="latitude">Lat:</label>
-          <input
-            type="number"
-            id="latitude"
-            name="latitude"
-            placeholder="e.g. 40.7128"
-            aria-label="Latitude"
-            step="0.0001"
-            min="-90"
-            max="90"
-            pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
-            title="Enter a latitude value between -90 and 90 degrees"
-            autocomplete="off"
-          />
-          <small class="input-help">Valid range: -90° to 90°</small>
-        </div>
-        <div class="input-group">
-          <label for="longitude">Lng:</label>
-          <input
-            type="number"
-            id="longitude"
-            name="longitude"
-            placeholder="e.g. -74.0060"
-            aria-label="Longitude"
-            step="0.0001"
-            min="-180"
-            max="180"
-            pattern="^-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180)(\.[0-9]{1,8})?$"
-            title="Enter a longitude value between -180 and 180 degrees"
-            autocomplete="off"
-          />
-          <small class="input-help">Valid range: -180° to 180°</small>
-        </div>
         <button
-          id="add-marker"
-          aria-label="Add marker at specified coordinates"
+          class="toggle-panel-button"
+          onclick="document.getElementById('coordinate-inputs').classList.toggle('expanded')"
+          aria-label="Toggle panel visibility"
+          title="Toggle panel visibility"
         >
-          Add Marker
         </button>
-      </div>
 
-      <!-- 标记控制部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Marker Controls</div>
-        <div class="marker-controls">
+        <section class="panel-section" aria-labelledby="coordinates-title">
+          <h2 id="coordinates-title" class="panel-section-title">
+            Coordinates
+          </h2>
+          <div class="input-group">
+            <label for="latitude">Lat:</label>
+            <input
+              type="number"
+              id="latitude"
+              name="latitude"
+              placeholder="e.g. 40.7128"
+              aria-label="Latitude"
+              step="0.0001"
+              min="-90"
+              max="90"
+              pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
+              title="Enter a latitude value between -90 and 90 degrees"
+              autocomplete="off"
+            />
+            <small class="input-help">Valid range: -90° to 90°</small>
+          </div>
+          <div class="input-group">
+            <label for="longitude">Lng:</label>
+            <input
+              type="number"
+              id="longitude"
+              name="longitude"
+              placeholder="e.g. -74.0060"
+              aria-label="Longitude"
+              step="0.0001"
+              min="-180"
+              max="180"
+              pattern="^-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180)(\.[0-9]{1,8})?$"
+              title="Enter a longitude value between -180 and 180 degrees"
+              autocomplete="off"
+            />
+            <small class="input-help">Valid range: -180° to 180°</small>
+          </div>
           <button
-            onclick="removeLastMarker()"
-            aria-label="Remove last marker"
-            title="Press Command+Z to remove last marker"
+            id="add-marker"
+            aria-label="Add marker at specified coordinates"
           >
-            Undo Last (⌘Z)
+            Add Marker
+          </button>
+        </section>
+
+        <section class="panel-section" aria-labelledby="marker-controls-title">
+          <h2 id="marker-controls-title" class="panel-section-title">
+            Marker Controls
+          </h2>
+          <div class="marker-controls">
+            <button
+              onclick="removeLastMarker()"
+              aria-label="Remove last marker"
+              title="Press Command+Z to remove last marker"
+            >
+              Undo Last (⌘Z)
+            </button>
+            <button
+              onclick="clearAllMarkers()"
+              aria-label="Clear all markers"
+              title="Press Command+Shift+Backspace to clear all markers"
+            >
+              Clear All (⌘⇧⌫)
+            </button>
+          </div>
+          <div class="controls-container">
+            <input
+              type="checkbox"
+              id="show-index-data"
+              class="toggle-switch"
+              onchange="toggleIndexData()"
+              aria-label="Toggle index data visibility"
+            />
+            <label for="show-index-data" class="toggle-label"
+            >Show Index Data</label>
+          </div>
+        </section>
+
+        <section class="panel-section" aria-labelledby="share-title">
+          <h2 id="share-title" class="panel-section-title">Share</h2>
+          <button
+            id="share-button"
+            class="share-button"
+            aria-label="Share current view"
+            style="margin-bottom: 8px"
+          >
+            Share Current View
           </button>
           <button
-            onclick="clearAllMarkers()"
-            aria-label="Clear all markers"
-            title="Press Command+Shift+Backspace to clear all markers"
+            id="share-image-button"
+            class="share-button"
+            aria-label="Share as image"
           >
-            Clear All (⌘⇧⌫)
+            Share as Image
           </button>
-        </div>
-        <div class="controls-container">
-          <input
-            type="checkbox"
-            id="show-index-data"
-            class="toggle-switch"
-            onchange="toggleIndexData()"
-            aria-label="Toggle index data visibility"
-          />
-          <label for="show-index-data" class="toggle-label"
-          >Show Index Data</label>
-        </div>
-      </div>
+        </section>
 
-      <!-- 分享部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Share</div>
-        <button
-          id="share-button"
-          class="share-button"
-          aria-label="Share current view"
-          style="margin-bottom: 8px"
-        >
-          Share Current View
-        </button>
-        <button
-          id="share-image-button"
-          class="share-button"
-          aria-label="Share as image"
-        >
-          Share as Image
-        </button>
-      </div>
+        <section class="panel-section" aria-labelledby="appearance-title">
+          <h2 id="appearance-title" class="panel-section-title">Appearance</h2>
+          <div class="theme-controls">
+            <label for="theme-select">Theme:</label>
+            <select
+              id="theme-select"
+              onchange="toggleTheme(this.value)"
+              aria-label="Select theme"
+            >
+              <option value="auto">Auto (System)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </div>
+        </section>
 
-      <!-- 主题设置部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Appearance</div>
-        <div class="theme-controls">
-          <label for="theme-select">Theme:</label>
-          <select
-            id="theme-select"
-            onchange="toggleTheme(this.value)"
-            aria-label="Select theme"
+        <section class="panel-section" aria-labelledby="help-title">
+          <h2 id="help-title" class="panel-section-title">Help</h2>
+          <button
+            class="help-button"
+            aria-label="Show keyboard shortcuts"
+            onclick="toggleShortcutsHelp()"
           >
-            <option value="auto">Auto (System)</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="high-contrast">High Contrast</option>
-          </select>
-        </div>
-      </div>
+            Keyboard Shortcuts
+          </button>
+          <div id="shortcuts-panel" class="shortcuts-content" hidden>
+            <ul>
+              <li>
+                <kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out
+              </li>
+              <li>
+                <kbd>←</kbd>
+                <kbd>↑</kbd>
+                <kbd>→</kbd>
+                <kbd>↓</kbd> - Pan map
+              </li>
+            </ul>
+          </div>
+        </section>
 
-      <!-- 快捷键部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Help</div>
-        <button
-          class="help-button"
-          aria-label="Show keyboard shortcuts"
-          onclick="toggleShortcutsHelp()"
-        >
-          Keyboard Shortcuts
-        </button>
-        <div id="shortcuts-panel" class="shortcuts-content" hidden>
-          <ul>
-            <li>
-              <kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker
-            </li>
-            <li>
-              <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers
-            </li>
-            <li>
-              <kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in
-            </li>
-            <li>
-              <kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out
-            </li>
-            <li>
-              <kbd>←</kbd>
-              <kbd>↑</kbd>
-              <kbd>→</kbd>
-              <kbd>↓</kbd> - Pan map
-            </li>
-          </ul>
-        </div>
-      </div>
+        <section class="panel-section" aria-labelledby="links-title">
+          <h2 id="links-title" class="panel-section-title">Links</h2>
+          <nav class="links-section">
+            <ul>
+              <li>
+                <a
+                  href="https://ringsaturn.github.io/tzf-web/simple"
+                  target="_blank"
+                  rel="noopener"
+                >Simple Mode</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-web"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-web Source</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-wasm"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-wasm Library</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-rs"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-rs Engine</a>
+              </li>
+            </ul>
+          </nav>
+        </section>
+      </aside>
 
-      <!-- 相关链接部分 -->
-      <div class="panel-section">
-        <div class="panel-section-title">Links</div>
-        <div class="links-section">
-          <ul>
-            <li>
-              <a
-                href="https://ringsaturn.github.io/tzf-web/simple"
-                target="_blank"
-              >Simple Mode</a>
-            </li>
-            <li>
-              <a href="https://github.com/ringsaturn/tzf-web" target="_blank"
-              >tzf-web</a>
-            </li>
-            <li>
-              <a href="https://github.com/ringsaturn/tzf-wasm" target="_blank"
-              >tzf-wasm</a>
-            </li>
-            <li>
-              <a href="https://github.com/ringsaturn/tzf-rs" target="_blank"
-              >tzf-rs</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
+      <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
+    </main>
+
+    <footer>
+      <p>
+        &copy; 2024 tzf-web. Built with <a
+          href="https://github.com/evansiroky/timezone-boundary-builder"
+          target="_blank"
+          rel="noopener"
+        >timezone-boundary-builder</a>.
+      </p>
+    </footer>
   </body>
 </html>
