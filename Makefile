@@ -12,6 +12,7 @@ artifact:
 	@cp LICENSE dist/
 	@cp README.md dist/
 	@cp *.html dist/
+	@cp sitemap.xml dist/
 	@cp -r static/* dist
 
 preview:
