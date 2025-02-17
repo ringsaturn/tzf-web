@@ -966,6 +966,13 @@
           theme: theme === "dark" ? "black" : "white",
         });
         window.baseLayer.addTo(map);
+
+        // 更新网格颜色
+        if (window.graticuleLayer) {
+          map.removeLayer(window.graticuleLayer);
+          window.graticuleLayer = createGraticule();
+          map.addLayer(window.graticuleLayer);
+        }
       }
 
       // Initial theme setup
@@ -980,20 +987,65 @@
         });
 
       // Add grid layer
-      L.GridLayer.GridDebug = L.GridLayer.extend({
-        createTile: function (coords) {
-          const tile = document.createElement("div");
-          tile.style.outline = "1px solid rgba(208, 240, 192, 1)";
-          tile.style.fontSize = "13pt";
-          tile.style.opacity = "1";
-          tile.innerHTML = [coords.z, coords.x, coords.y].join("/");
-          return tile;
-        },
-      });
-      L.gridLayer.gridDebug = function (opts) {
-        return new L.GridLayer.GridDebug(opts);
-      };
-      map.addLayer(L.gridLayer.gridDebug());
+      function createGraticule() {
+        const graticule = L.layerGroup();
+        
+        // 添加经线
+        for (let lng = -180; lng <= 180; lng += 15) {
+          const line = L.polyline([
+            [-90, lng],
+            [90, lng]
+          ], {
+            color: window.currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            weight: 1,
+            interactive: false
+          });
+          
+          // 添加经线标签
+          const label = L.marker([0, lng], {
+            icon: L.divIcon({
+              className: 'graticule-label',
+              html: `${Math.abs(lng)}°${lng < 0 ? 'W' : lng > 0 ? 'E' : ''}`,
+              iconSize: [0, 0]
+            }),
+            interactive: false
+          });
+          
+          graticule.addLayer(line);
+          graticule.addLayer(label);
+        }
+        
+        // 添加纬线
+        for (let lat = -90; lat <= 90; lat += 15) {
+          const line = L.polyline([
+            [lat, -180],
+            [lat, 180]
+          ], {
+            color: window.currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            weight: 1,
+            interactive: false
+          });
+          
+          // 添加纬线标签
+          const label = L.marker([lat, 0], {
+            icon: L.divIcon({
+              className: 'graticule-label',
+              html: `${Math.abs(lat)}°${lat < 0 ? 'S' : lat > 0 ? 'N' : ''}`,
+              iconSize: [0, 0]
+            }),
+            interactive: false
+          });
+          
+          graticule.addLayer(line);
+          graticule.addLayer(label);
+        }
+        
+        return graticule;
+      }
+
+      // 创建并添加经纬度网格
+      window.graticuleLayer = createGraticule();
+      map.addLayer(window.graticuleLayer);
 
       // 优化移动端触摸体验
       if (L.Browser.touch) {
@@ -2304,6 +2356,34 @@
 
       .time-value-hover {
         color: var(--text-color);
+      }
+
+      /* 经纬度网格标签样式 */
+      .graticule-label {
+        font-size: 10px;
+        color: var(--text-color);
+        text-shadow: -1px -1px 0 var(--bg-color),
+                     1px -1px 0 var(--bg-color),
+                    -1px  1px 0 var(--bg-color),
+                     1px  1px 0 var(--bg-color);
+        white-space: nowrap;
+        opacity: 0.8;
+      }
+
+      [data-theme="dark"] .graticule-label {
+        text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.8),
+                     1px -1px 0 rgba(0, 0, 0, 0.8),
+                    -1px  1px 0 rgba(0, 0, 0, 0.8),
+                     1px  1px 0 rgba(0, 0, 0, 0.8);
+      }
+
+      [data-theme="high-contrast"] .graticule-label {
+        color: white;
+        text-shadow: -1px -1px 0 black,
+                     1px -1px 0 black,
+                    -1px  1px 0 black,
+                     1px  1px 0 black;
+        opacity: 1;
       }
 
       #mousecoord {
