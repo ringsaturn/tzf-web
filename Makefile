@@ -20,6 +20,9 @@ preview:
 	@echo "\033[1;32mPlease open http://localhost:9999\033[0m"
 	@cd dist && python3 -m http.server 9999
 
+typos:
+	@typos .
+
 gen-polygons:
 	@mkdir -p static/timezone-polygons
 	@mkdir -p static/timezone-polygons-index
