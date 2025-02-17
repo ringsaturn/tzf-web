@@ -294,6 +294,46 @@
         }
       }
 
+      function formatTime(date, timezone) {
+        const timeStr = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          timeZoneName: "short",
+          timeZone: timezone,
+        }).format(date);
+
+        const dateStr = new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          timeZone: timezone,
+        }).format(date);
+
+        return `${dateStr}, ${timeStr}`;
+      }
+
+      // 获取时区的偏移量
+      function getTimezoneOffset(date, timezone) {
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          timeZoneName: "longOffset",
+        });
+        return formatter.format(date).split(" ").pop();
+      }
+
+      // 获取唯一时区（基于偏移量）
+      function getUniqueTimezones(date, timezones) {
+        const seen = new Map(); // 用于存储偏移量到时区的映射
+        timezones.forEach((tz) => {
+          const offset = getTimezoneOffset(date, tz);
+          if (!seen.has(offset)) {
+            seen.set(offset, tz);
+          }
+        });
+        return Array.from(seen.values());
+      }
+
       // 显示时区信息的函数
       async function showTimezone(lat, lng, map) {
         console.log("showTimezone called with:", { lat, lng });
@@ -332,20 +372,43 @@
           const marker = L.marker([roundedLat, roundedLng], {
             icon: getCurrentMarkerIcon(),
           });
-          const joinedTimezones = timezones.join(", ");
-          const popupContent = `
+
+          // 创建一个定时更新的时间显示
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "marker-time";
+          const updateTime = () => {
+            const now = new Date();
+            const uniqueTimezones = getUniqueTimezones(now, timezones);
+            const timeStrings = uniqueTimezones.map((tz) => {
+              const time = formatTime(now, tz);
+              return `<div class="time-entry">
+                <div class="timezone-name">${
+                tz.replace(/_/g, " ")
+              }</div>
+                <div class="time-value">${time}</div>
+              </div>`;
+            });
+            timeDiv.innerHTML = timeStrings.join("");
+          };
+          updateTime();
+          // 每秒更新一次时间
+          const timeInterval = setInterval(updateTime, 1000);
+
+          const popupContent = document.createElement("div");
+          popupContent.innerHTML = `
             <strong>Location:</strong><br>
             Latitude: ${roundedLat}<br>
-            Longitude: ${roundedLng}<br>
-            <strong>Timezone${
-            timezones.length > 1 ? "s" : ""
-          }:</strong><br>
-            ${joinedTimezones}
+            Longitude: ${roundedLng}
           `;
+
+          popupContent.appendChild(timeDiv);
 
           marker.bindPopup(popupContent);
           marker.addTo(map);
           marker.openPopup();
+
+          // 保存marker和interval的引用，以便后续清理
+          marker.timeInterval = timeInterval;
           window.markers.push(marker);
           console.log("Marker added to map");
 
@@ -380,7 +443,12 @@
 
       // 清除所有标记和多边形
       window.clearAllMarkers = function () {
-        window.markers.forEach((marker) => map.removeLayer(marker));
+        window.markers.forEach((marker) => {
+          if (marker.timeInterval) {
+            clearInterval(marker.timeInterval);
+          }
+          map.removeLayer(marker);
+        });
         window.markers = [];
 
         // 清除所有多边形和索引图层
@@ -405,6 +473,9 @@
       window.removeLastMarker = function () {
         if (window.markers.length > 0) {
           const marker = window.markers.pop();
+          if (marker.timeInterval) {
+            clearInterval(marker.timeInterval);
+          }
           map.removeLayer(marker);
 
           // 检查是否还有其他标记使用相同的时区
@@ -953,10 +1024,21 @@
         var lat = e.latlng.wrap().lat.toFixed(4);
         if (window.finder) {
           var timezones = window.finder.get_tz_names(lng, lat);
-          var joinedTimezones = timezones.join(", ");
           var dataVersion = window.finder.data_version();
+          const now = new Date();
+          const uniqueTimezones = getUniqueTimezones(now, timezones);
+          const timeStrings = uniqueTimezones.map((tz) => {
+            const time = formatTime(now, tz);
+            return `<div class="time-entry-hover">
+              <span class="timezone-name-hover">${
+              tz.replace(/_/g, " ")
+            }:</span>
+              <span class="time-value-hover">${time}</span>
+            </div>`;
+          });
+          const timeDisplay = timeStrings.join("");
           document.getElementById("mousecoord").innerHTML =
-            `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>Timezone: ${joinedTimezones}`;
+            `Data Version: ${dataVersion}<br>Lat: ${lat} Lng: ${lng}<br>${timeDisplay}`;
         } else {
           document.getElementById("mousecoord").innerHTML =
             `Lat: ${lat} Lng: ${lng}`;
@@ -2068,6 +2150,63 @@
           font-size: 13px;
           margin-bottom: 8px;
         }
+      }
+
+      .marker-time {
+        margin-top: 8px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      .time-entry {
+        margin-bottom: 4px;
+        padding: 4px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .time-entry:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+      }
+
+      .timezone-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+        color: var(--text-color);
+      }
+
+      .time-value {
+        color: var(--text-color);
+        opacity: 0.9;
+      }
+
+      .time-entry-hover {
+        margin: 2px 0;
+      }
+
+      .timezone-name-hover {
+        font-weight: 500;
+        margin-right: 4px;
+      }
+
+      [data-theme="dark"] .time-entry {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+
+      [data-theme="high-contrast"] .time-entry {
+        border-bottom-color: white;
+      }
+
+      [data-theme="dark"] .marker-time {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      [data-theme="high-contrast"] .marker-time {
+        background: black;
+        color: white;
+        border: 1px solid white;
       }
     </style>
   </head>
