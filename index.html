@@ -1185,7 +1185,7 @@
           await loadHtml2Canvas();
 
           // 创建一个新的隐藏的div用于截图
-          const container = document.createElement("div");
+          const container = document.createElement;
           container.style.position = "absolute";
           container.style.left = "-9999px";
           container.style.width = "1200px";
@@ -1287,6 +1287,174 @@
           document.head.appendChild(script);
         });
       }
+
+      // 添加全局变量
+      window.sunIlluminationLayer = null;
+      window.showSunIllumination =
+        localStorage.getItem("showSunIllumination") === "true";
+
+      // 计算太阳位置
+      function calculateSolarPosition(date) {
+        const julianDate = (date.getTime() / 86400000) + 2440587.5;
+        const julianCentury = (julianDate - 2451545) / 36525;
+
+        // 计算太阳的平均黄经
+        let L0 = 280.46646 +
+          julianCentury * (36000.76983 + julianCentury * 0.0003032);
+        L0 = L0 % 360;
+        if (L0 < 0) L0 += 360;
+
+        // 计算太阳的平均近点角
+        let M = 357.52911 +
+          julianCentury * (35999.05029 - 0.0001537 * julianCentury);
+        M = M % 360;
+        if (M < 0) M += 360;
+
+        // 计算太阳的偏心率
+        const e = 0.016708634 -
+          julianCentury * (0.000042037 + 0.0000001267 * julianCentury);
+
+        // 计算中心方程
+        const C = (1.914602 -
+              julianCentury * (0.004817 + 0.000014 * julianCentury)) *
+            Math.sin(M * Math.PI / 180) +
+          (0.019993 - 0.000101 * julianCentury) *
+            Math.sin(2 * M * Math.PI / 180) +
+          0.000289 * Math.sin(3 * M * Math.PI / 180);
+
+        // 计算太阳的真黄经
+        const L = L0 + C;
+
+        // 计算太阳的真近点角
+        const v = M + C;
+
+        // 计算太阳的日心距离
+        const R = (1.000001018 * (1 - e * e)) /
+          (1 + e * Math.cos(v * Math.PI / 180));
+
+        // 计算黄道倾角
+        const epsilon = 23.43929111 -
+          julianCentury *
+            (0.013004167 +
+              julianCentury *
+                (0.0000001639 + julianCentury * 0.0000005036));
+
+        // 计算太阳的赤纬
+        const delta = Math.asin(
+          Math.sin(epsilon * Math.PI / 180) *
+            Math.sin(L * Math.PI / 180),
+        ) * 180 / Math.PI;
+
+        // 计算格林尼治时角
+        const GMST = 280.46061837 +
+          360.98564736629 * (julianDate - 2451545) +
+          julianCentury * julianCentury * 0.000387933;
+        const GHA = (GMST % 360 - L) % 360;
+
+        return {
+          lat: delta,
+          lng: -GHA,
+        };
+      }
+
+      // 创建太阳照射范围多边形
+      function createSunIlluminationPolygon() {
+        const date = new Date();
+        const sunPosition = calculateSolarPosition(date);
+
+        const points = [];
+        const step = 5; // 每5度取一个点
+
+        // 生成日夜分界线的点
+        for (let lng = -180; lng <= 180; lng += step) {
+          // 计算给定经度上的昼夜分界纬度
+          const lat = Math.atan(
+            -Math.cos((lng - sunPosition.lng) * Math.PI / 180) /
+              Math.tan(sunPosition.lat * Math.PI / 180),
+          ) * 180 / Math.PI;
+
+          if (!isNaN(lat) && Math.abs(lat) <= 90) {
+            points.push([lat, lng]);
+          }
+        }
+
+        // 确保多边形闭合，标记夜间区域
+        if (points.length > 0) {
+          // 判断是否需要闭合到北极还是南极
+          const sunAboveEquator = sunPosition.lat > 0;
+          const polarLat = sunAboveEquator ? -90 : 90;
+
+          points.push([polarLat, points[points.length - 1][1]]);
+          for (let lng = 180; lng >= -180; lng -= step) {
+            points.push([polarLat, lng]);
+          }
+          points.push([polarLat, points[0][1]]);
+          points.push(points[0]);
+        }
+
+        return points;
+      }
+
+      // 更新太阳照射范围
+      function updateSunIllumination() {
+        if (!window.showSunIllumination) return;
+
+        const points = createSunIlluminationPolygon();
+
+        if (window.sunIlluminationLayer) {
+          map.removeLayer(window.sunIlluminationLayer);
+        }
+
+        window.sunIlluminationLayer = L.polygon(points, {
+          className: "sun-illumination",
+          interactive: false,
+        }).addTo(map);
+      }
+
+      // 切换太阳照射范围显示
+      window.toggleSunIllumination = function () {
+        window.showSunIllumination = !window.showSunIllumination;
+        localStorage.setItem(
+          "showSunIllumination",
+          window.showSunIllumination,
+        );
+
+        if (window.showSunIllumination) {
+          updateSunIllumination();
+          // 每分钟更新一次太阳照射范围
+          window.sunUpdateInterval = setInterval(
+            updateSunIllumination,
+            60000,
+          );
+        } else {
+          if (window.sunIlluminationLayer) {
+            map.removeLayer(window.sunIlluminationLayer);
+          }
+          if (window.sunUpdateInterval) {
+            clearInterval(window.sunUpdateInterval);
+          }
+        }
+      };
+
+      // 初始化太阳照射控件状态
+      document.getElementById("show-sun-illumination").checked =
+        window.showSunIllumination;
+      if (window.showSunIllumination) {
+        updateSunIllumination();
+        window.sunUpdateInterval = setInterval(
+          updateSunIllumination,
+          60000,
+        );
+      }
+
+      // 在主题切换时更新太阳照射范围样式
+      const originalToggleTheme = window.toggleTheme;
+      window.toggleTheme = function (mode) {
+        originalToggleTheme(mode);
+        if (window.showSunIllumination) {
+          updateSunIllumination();
+        }
+      };
     </script>
 
     <style>
@@ -2262,7 +2430,6 @@
       .time-entry-hover {
         margin: 2px 0;
       }
-
       .timezone-name-hover {
         font-weight: 500;
         margin-right: 4px;
@@ -2413,6 +2580,50 @@
         color: white;
         border: 1px solid white;
       }
+
+      /* 添加太阳照射范围相关样式 */
+      .sun-illumination {
+        stroke: #FFD700;  /* 金色边界线 */
+        stroke-width: 3;
+        stroke-dasharray: none;
+        fill: rgba(0, 0, 0, 0.35);  /* 夜晚区域的阴影加深 */
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+
+      [data-theme="dark"] .sun-illumination {
+        stroke: #FFD700;
+        stroke-width: 3;
+        stroke-dasharray: none;
+        fill: rgba(0, 0, 0, 0.5);  /* 暗色主题下更深的阴影 */
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="high-contrast"] .sun-illumination {
+        stroke: #FFD700;
+        stroke-width: 4;
+        stroke-dasharray: none;
+        fill: rgba(0, 0, 0, 0.7);  /* 高对比度模式下最深的阴影 */
+        transition: all 0.3s ease;
+      }
+
+      /* 保持地图底图的过渡效果 */
+      .leaflet-tile-container {
+        transition: all 0.3s ease;
+      }
+
+      /* 夜晚区域的地图变暗效果增强 */
+      .sun-illumination ~ .leaflet-tile-container {
+        filter: brightness(0.85);
+      }
+
+      [data-theme="dark"] .sun-illumination ~ .leaflet-tile-container {
+        filter: brightness(0.75);
+      }
+
+      [data-theme="high-contrast"] .sun-illumination ~ .leaflet-tile-container {
+        filter: brightness(0.65);
+      }
     </style>
   </head>
 
@@ -2523,6 +2734,17 @@
             />
             <label for="show-index-data" class="toggle-label"
             >Show Index Data</label>
+          </div>
+          <div class="controls-container">
+            <input
+              type="checkbox"
+              id="show-sun-illumination"
+              class="toggle-switch"
+              onchange="toggleSunIllumination()"
+              aria-label="Toggle sun illumination"
+            />
+            <label for="show-sun-illumination" class="toggle-label"
+            >Show Sun Illumination</label>
           </div>
         </section>
 
