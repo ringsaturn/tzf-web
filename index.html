@@ -1291,7 +1291,7 @@
       // 添加全局变量
       window.sunIlluminationLayer = null;
       window.showSunIllumination =
-        localStorage.getItem("showSunIllumination") === "true";
+        localStorage.getItem("showSunIllumination") !== "false";
 
       // 计算太阳位置
       function calculateSolarPosition(date) {
