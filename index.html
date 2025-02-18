@@ -2583,27 +2583,27 @@
 
       /* 添加太阳照射范围相关样式 */
       .sun-illumination {
-        stroke: #FFD700;  /* 金色边界线 */
+        stroke: #ffd700; /* 金色边界线 */
         stroke-width: 3;
         stroke-dasharray: none;
-        fill: rgba(0, 0, 0, 0.35);  /* 夜晚区域的阴影加深 */
+        fill: rgba(0, 0, 0, 0.35); /* 夜晚区域的阴影加深 */
         transition: all 0.3s ease;
         pointer-events: none;
       }
 
       [data-theme="dark"] .sun-illumination {
-        stroke: #FFD700;
+        stroke: #ffd700;
         stroke-width: 3;
         stroke-dasharray: none;
-        fill: rgba(0, 0, 0, 0.5);  /* 暗色主题下更深的阴影 */
+        fill: rgba(0, 0, 0, 0.5); /* 暗色主题下更深的阴影 */
         transition: all 0.3s ease;
       }
 
       [data-theme="high-contrast"] .sun-illumination {
-        stroke: #FFD700;
+        stroke: #ffd700;
         stroke-width: 4;
         stroke-dasharray: none;
-        fill: rgba(0, 0, 0, 0.7);  /* 高对比度模式下最深的阴影 */
+        fill: rgba(0, 0, 0, 0.7); /* 高对比度模式下最深的阴影 */
         transition: all 0.3s ease;
       }
 
@@ -2621,7 +2621,9 @@
         filter: brightness(0.75);
       }
 
-      [data-theme="high-contrast"] .sun-illumination ~ .leaflet-tile-container {
+      [data-theme="high-contrast"]
+        .sun-illumination
+        ~ .leaflet-tile-container {
         filter: brightness(0.65);
       }
     </style>
