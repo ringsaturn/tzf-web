@@ -208,6 +208,9 @@
       window.showIndexData =
         localStorage.getItem("showIndexData") === "true";
 
+      // Initialize showCivilTwilight with a default value
+      window.showCivilTwilight = localStorage.getItem('showCivilTwilight') === 'true' || false;
+
       // 获取时区的颜色，确保相邻时区颜色不同
       function getTimezoneColor(timezone) {
         if (!window.timezoneColors.has(timezone)) {
@@ -1455,6 +1458,133 @@
           updateSunIllumination();
         }
       };
+
+      // Add a function to calculate the civil twilight position
+      function calculateCivilTwilightPosition(date) {
+        const julianDate = (date.getTime() / 86400000) + 2440587.5;
+        const julianCentury = (julianDate - 2451545) / 36525;
+
+        // 计算太阳的平均黄经
+        let L0 = 280.46646 + julianCentury * (36000.76983 + julianCentury * 0.0003032);
+        L0 = L0 % 360;
+        if (L0 < 0) L0 += 360;
+
+        // 计算太阳的平均近点角
+        let M = 357.52911 + julianCentury * (35999.05029 - 0.0001537 * julianCentury);
+        M = M % 360;
+        if (M < 0) M += 360;
+
+        // 计算中心方程
+        const C = (1.914602 - julianCentury * (0.004817 + 0.000014 * julianCentury)) * Math.sin(M * Math.PI / 180) +
+            (0.019993 - 0.000101 * julianCentury) * Math.sin(2 * M * Math.PI / 180) +
+            0.000289 * Math.sin(3 * M * Math.PI / 180);
+
+        // 计算太阳的真黄经
+        const L = L0 + C;
+
+        // 计算黄道倾角
+        const epsilon = 23.43929111 - julianCentury * (0.013004167 + julianCentury * (0.0000001639 + julianCentury * 0.0000005036));
+
+        // 计算太阳的赤纬
+        const delta = Math.asin(Math.sin(epsilon * Math.PI / 180) * Math.sin(L * Math.PI / 180)) * 180 / Math.PI;
+
+        // 计算格林尼治时角
+        const GMST = 280.46061837 + 360.98564736629 * (julianDate - 2451545) + julianCentury * julianCentury * 0.000387933;
+        const GHA = (GMST % 360 - L) % 360;
+
+        // 民用曙暝光时太阳位于地平线下6度
+        return {
+            lat: delta,
+            lng: -GHA
+        };
+      }
+
+      // Create a function to draw the civil twilight line
+      function createCivilTwilightLine() {
+        const date = new Date();
+        const twilightPosition = calculateCivilTwilightPosition(date);
+
+        const points = [];
+        const step = 1;
+
+        // 生成民用曙暝光线的点
+        for (let lng = -180; lng <= 180; lng += step) {
+            // 计算给定经度上的昼夜分界纬度
+            const lat = Math.atan(
+                -Math.cos((lng - twilightPosition.lng) * Math.PI / 180) /
+                Math.tan(twilightPosition.lat * Math.PI / 180)
+            ) * 180 / Math.PI;
+
+            if (!isNaN(lat) && Math.abs(lat) <= 90) {
+                // 处理经度，考虑国际日期变更线
+                let adjustedLng = lng - twilightPosition.lng;
+                // 确保 adjustedLng 在 -180 到 180 之间
+                while (adjustedLng <= -180) adjustedLng += 360;
+                while (adjustedLng > 180) adjustedLng -= 360;
+
+                // 根据调整后的经度判断是日出还是日落
+                if (adjustedLng < 0) {
+                    // 日出部分：向西偏移6度（减少经度）
+                    let newLng = lng - 6;
+                    // 处理跨越180度经线的情况
+                    if (newLng < -180) newLng += 360;
+                    points.push([lat, newLng]);
+                } else {
+                    // 日落部分：向东偏移6度（增加经度）
+                    let newLng = lng + 6;
+                    // 处理跨越180度经线的情况
+                    if (newLng > 180) newLng -= 360;
+                    points.push([lat, newLng]);
+                }
+            }
+        }
+
+        // 对点进行排序以确保线段正确连接
+        points.sort((a, b) => a[1] - b[1]);
+
+        if (window.civilTwilightLayer) {
+            map.removeLayer(window.civilTwilightLayer);
+        }
+
+        window.civilTwilightLayer = L.polyline(points, {
+            color: '#ff4500',
+            weight: 2,
+            dashArray: '5, 5',
+            interactive: false
+        }).addTo(map);
+      }
+
+      // Update civil twilight line
+      function updateCivilTwilight() {
+        if (!window.showCivilTwilight) return;
+        createCivilTwilightLine();
+      }
+
+      // Toggle civil twilight line display
+      window.toggleCivilTwilight = function () {
+        window.showCivilTwilight = !window.showCivilTwilight;
+        localStorage.setItem('showCivilTwilight', window.showCivilTwilight);
+
+        if (window.showCivilTwilight) {
+          updateCivilTwilight();
+          window.civilTwilightInterval = setInterval(updateCivilTwilight, 60000);
+        } else {
+          if (window.civilTwilightLayer) {
+            map.removeLayer(window.civilTwilightLayer);
+          }
+          if (window.civilTwilightInterval) {
+            clearInterval(window.civilTwilightInterval);
+          }
+        }
+      };
+
+      // Initialize civil twilight control state
+      document.getElementById("show-civil-twilight").checked = window.showCivilTwilight;
+      if (window.showCivilTwilight) {
+        updateCivilTwilight();
+        window.civilTwilightInterval = setInterval(updateCivilTwilight, 60000);
+      }
+
     </script>
 
     <style>
@@ -2747,6 +2877,17 @@
             />
             <label for="show-sun-illumination" class="toggle-label"
             >Show Sun Illumination</label>
+          </div>
+          <div class="controls-container">
+            <input
+              type="checkbox"
+              id="show-civil-twilight"
+              class="toggle-switch"
+              onchange="toggleCivilTwilight()"
+              aria-label="Toggle civil twilight"
+            />
+            <label for="show-civil-twilight" class="toggle-label"
+            >Show Civil Twilight</label>
           </div>
         </section>
 
