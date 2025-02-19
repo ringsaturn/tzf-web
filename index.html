@@ -352,7 +352,9 @@
       function getSolarTime(date, lng) {
         // Approximation: every degree of longitude corresponds to 4 minutes.
         const offsetMinutes = lng * 4;
-        const solarDate = new Date(date.getTime() + offsetMinutes * 60000);
+        const solarDate = new Date(
+          date.getTime() + offsetMinutes * 60000,
+        );
         return solarDate.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
@@ -419,7 +421,9 @@
             // Append a line for Solar Time using the marker's longitude
             const solarTimeLine = `<div class="time-entry">
                                      <div class="timezone-name">Solar Time</div>
-                                     <div class="time-value">${getSolarTime(now, roundedLng)}</div>
+                                     <div class="time-value">${
+              getSolarTime(now, roundedLng)
+            }</div>
                                    </div>`;
             timeDiv.innerHTML = timeStrings.join("") + solarTimeLine;
           };
