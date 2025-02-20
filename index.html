@@ -1386,7 +1386,7 @@
         const sunPosition = calculateSolarPosition(date);
 
         const points = [];
-        const step = 1; // 每5度取一个点
+        const step = 0.5;
 
         // 生成日夜分界线的点
         for (let lng = -180; lng <= 180; lng += step) {
