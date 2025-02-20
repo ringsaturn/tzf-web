@@ -128,6 +128,7 @@
     <script
       src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"
     ></script>
+    <script src="https://unpkg.com/fuse.js@7.1.0"></script>
 
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://api.protomaps.com">
@@ -848,18 +849,40 @@
       // Cities search functionality
       let citiesData = [];
       let searchTimeout = null;
+      let fuse = null;
 
       // Load cities data
       async function loadCitiesData() {
         try {
           const response = await fetch(
-            "https://unpkg.com/cities.json@1.1.45/cities.json",
+            "https://unpkg.com/cities.json@1.1.45/cities.json"
           );
           citiesData = await response.json();
+          
+          // Initialize Fuse instance with loaded data
+          fuse = new Fuse(citiesData, {
+            keys: [
+              { name: 'name', weight: 2 },    // Give more weight to city name
+              { name: 'country', weight: 0.3 } // Also search by country but with lower weight
+            ],
+            includeScore: true,
+            threshold: 0.4,     // Slightly more lenient threshold
+            distance: 100,      // Allow more errors for longer strings
+            minMatchCharLength: 2,
+            shouldSort: true,   // Ensure results are sorted by score
+            ignoreLocation: true, // Ignore where the match occurs in the string
+            useExtendedSearch: true, // Enable extended search features
+            getFn: (obj, path) => {
+              // Custom getter to handle both exact and fuzzy matches
+              const value = Fuse.config.getFn(obj, path);
+              return typeof value === 'string' ? value.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : value;
+            }
+          });
+          
           console.log(
             "Cities data loaded:",
             citiesData.length,
-            "cities",
+            "cities"
           );
         } catch (error) {
           console.error("Error loading cities data:", error);
@@ -869,14 +892,14 @@
 
       // Search cities function
       function searchCities(query) {
-        if (!query || query.length < 2) {
+        if (!query || query.length < 2 || !fuse) {
           return [];
         }
 
-        query = query.toLowerCase();
-        return citiesData
-          .filter((city) => city.name.toLowerCase().includes(query))
-          .slice(0, 10); // Limit to 10 results
+        const results = fuse.search(query);
+        return results
+          .slice(0, 10) // Limit to 10 results
+          .map(result => result.item);
       }
 
       // Display search results
