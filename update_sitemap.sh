@@ -17,8 +17,8 @@ EOL
 
 # Generate entries for each file
 for i in "${!files[@]}"; do
-    # Get last modified date and convert to ISO 8601 format
-    date=$(git log -1 --format=%cd --date=iso "${files[$i]}" | sed 's/ /T/;s/\([+-][0-9]\{2\}\)\([0-9]\{2\}\)/\1:\2/')
+    # Get last modified date and convert to ISO 8601 format with timezone
+    date=$(git log -1 --format=%cd --date=iso-strict "${files[$i]}")
     
     # Append URL entry to sitemap.xml
     cat >> sitemap.xml << EOL
