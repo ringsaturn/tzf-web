@@ -1,13 +1,17 @@
-fmt:
+.PHONY: sitemap.xml
+sitemap.xml:
+	@./update_sitemap.sh
+
+fmt: sitemap.xml
 	@deno fmt --ignore=dist
 
-check:
+check: sitemap.xml
 	@deno fmt --check --ignore=dist
 
-lint:
+lint: sitemap.xml
 	@deno lint --ignore=dist
 
-artifact:
+artifact: sitemap.xml
 	@mkdir -p dist
 	@cp LICENSE dist/
 	@cp README.md dist/
