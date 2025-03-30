@@ -2,16 +2,16 @@
 sitemap.xml:
 	@./update_sitemap.sh
 
-fmt: sitemap.xml
+fmt:
 	@deno fmt --ignore=dist
 
-check: sitemap.xml
+check:
 	@deno fmt --check --ignore=dist
 
-lint: sitemap.xml
+lint:
 	@deno lint --ignore=dist
 
-artifact: sitemap.xml
+artifact:
 	@mkdir -p dist
 	@cp LICENSE dist/
 	@cp README.md dist/
