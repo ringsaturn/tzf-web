@@ -126,7 +126,7 @@
       href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"
     />
     <script
-      src="https://unpkg.com/protomaps-leaflet/dist/protomaps-leaflet.js"
+      src="https://unpkg.com/protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js"
     ></script>
     <script src="https://unpkg.com/fuse.js@7.1.0"></script>
 
@@ -1186,8 +1186,9 @@
         }
         window.baseLayer = protomapsL.leafletLayer({
           url:
-            "https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
-          theme: theme === "dark" ? "black" : "white",
+            "https://api.protomaps.com/tiles/v4/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
+            flavor: theme === "dark" ? "black" : "white",
+          attribution: '© <a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
         });
         window.baseLayer.addTo(map);
 
