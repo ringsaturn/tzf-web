@@ -1187,8 +1187,9 @@
         window.baseLayer = protomapsL.leafletLayer({
           url:
             "https://api.protomaps.com/tiles/v4/{z}/{x}/{y}.mvt?key=ee3e89f1234d79e1",
-            flavor: theme === "dark" ? "black" : "white",
-          attribution: '© <a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
+          flavor: theme === "dark" ? "black" : "white",
+          attribution: '© <a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
+          lang: window.currentLanguage
         });
         window.baseLayer.addTo(map);
 
@@ -1200,8 +1201,26 @@
         }
       }
 
-      // Initial theme setup
-      updateMapTheme(window.currentTheme);
+      // Add language control
+      window.currentLanguage = localStorage.getItem("language") || "auto";
+      document.getElementById("language-select").value = window.currentLanguage;
+
+      // Remove the duplicate function declaration and keep only this one
+      window.updateMapLanguage = function(lang) {
+        if (lang === "auto") {
+          localStorage.removeItem("language");
+          window.currentLanguage = navigator.language || navigator.userLanguage || document.documentElement.lang || "en";
+        } else {
+          window.currentLanguage = lang;
+          localStorage.setItem("language", lang);
+        }
+
+        // 重新加载地图图层以应用新的语言设置
+        updateMapTheme(window.currentTheme);
+      };
+
+      // Update initial map language
+      updateMapLanguage(window.currentLanguage);
 
       // Listen for system theme changes
       window.matchMedia("(prefers-color-scheme: dark)")
@@ -1680,6 +1699,27 @@
           updateSunIllumination();
         }
       };
+
+      // Add language control
+      window.currentLanguage = localStorage.getItem("language") || "auto";
+      document.getElementById("language-select").value = window.currentLanguage;
+
+      // Remove the duplicate function declaration and keep only this one
+      window.updateMapLanguage = function(lang) {
+        if (lang === "auto") {
+          localStorage.removeItem("language");
+          window.currentLanguage = navigator.language || navigator.userLanguage || document.documentElement.lang || "en";
+        } else {
+          window.currentLanguage = lang;
+          localStorage.setItem("language", lang);
+        }
+
+        // 重新加载地图图层以应用新的语言设置
+        updateMapTheme(window.currentTheme);
+      };
+
+      // Update initial map language
+      updateMapLanguage(window.currentLanguage);
     </script>
 
     <style>
@@ -3116,6 +3156,24 @@
               <option value="light">Light</option>
               <option value="dark">Dark</option>
               <option value="high-contrast">High Contrast</option>
+            </select>
+          </div>
+          <div class="theme-controls">
+            <label for="language-select">Language:</label>
+            <select
+              id="language-select"
+              onchange="updateMapLanguage(this.value)"
+              aria-label="Select language"
+            >
+              <option value="auto">Auto (System)</option>
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="ru">Русский</option>
             </select>
           </div>
         </section>
