@@ -5,4 +5,3 @@ pkg/
 wasm-pack.log
 dist/
 tmp/
-static/vendor/

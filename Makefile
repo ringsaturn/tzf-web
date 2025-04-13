@@ -11,10 +11,7 @@ check:
 lint:
 	@deno lint --ignore=dist
 
-deps:
-	@./download-deps.sh
-
-artifact: deps
+artifact:
 	@mkdir -p dist
 	@cp LICENSE dist/
 	@cp README.md dist/
