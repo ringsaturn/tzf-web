@@ -3033,23 +3033,6 @@
             Coordinates
           </h2>
           <div class="input-group">
-            <label for="latitude">Lat:</label>
-            <input
-              type="number"
-              id="latitude"
-              name="latitude"
-              placeholder="e.g. 40.7128"
-              aria-label="Latitude"
-              step="0.0001"
-              min="-90"
-              max="90"
-              pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
-              title="Enter a latitude value between -90 and 90 degrees"
-              autocomplete="off"
-            />
-            <small class="input-help">Valid range: -90° to 90°</small>
-          </div>
-          <div class="input-group">
             <label for="longitude">Lng:</label>
             <input
               type="number"
@@ -3065,6 +3048,23 @@
               autocomplete="off"
             />
             <small class="input-help">Valid range: -180° to 180°</small>
+          </div>
+          <div class="input-group">
+            <label for="latitude">Lat:</label>
+            <input
+              type="number"
+              id="latitude"
+              name="latitude"
+              placeholder="e.g. 40.7128"
+              aria-label="Latitude"
+              step="0.0001"
+              min="-90"
+              max="90"
+              pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
+              title="Enter a latitude value between -90 and 90 degrees"
+              autocomplete="off"
+            />
+            <small class="input-help">Valid range: -90° to 90°</small>
           </div>
           <button
             id="add-marker"
