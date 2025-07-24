@@ -128,15 +128,20 @@ func main() {
 	// 	}
 	// }
 
-	if *dtype == int(dataTypePolygons) {
-		input := &pb.Timezones{}
-		if err := proto.Unmarshal(tzfrellite.LiteData, input); err != nil {
-			panic(err)
-		}
-		generatePolygons(input)
+	// if *dtype == int(dataTypePolygons) {
+	input := &pb.Timezones{}
+	fp := "tmp/combined-now.bin"
+	fpBytes, err := os.ReadFile(fp)
+	if err != nil {
+		panic(err)
 	}
+	if err := proto.Unmarshal(fpBytes, input); err != nil {
+		panic(err)
+	}
+	generatePolygons(input)
+	// }
 
-	if *dtype == int(dataTypeIndex) {
+	if *dtype == int(dataTypeIndex) && 1 == 2 {
 		input := &pb.PreindexTimezones{}
 		if err := proto.Unmarshal(tzfrellite.PreindexData, input); err != nil {
 			panic(err)
