@@ -21,12 +21,12 @@ jobs:
         with:
           comment_on_pr: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: make artifact
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         if: ${{ github.ref_name == 'main' }}
         with:
           path: "./dist"
