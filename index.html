@@ -134,13 +134,13 @@
     <link rel="preconnect" href="https://api.protomaps.com">
     <link
       rel="preload"
-      href="https://unpkg.com/tzf-wasm@1.0.1/tzf_wasm.js"
+      href="https://unpkg.com/tzf-wasm@1.1.0/tzf_wasm.js"
       as="script"
       crossorigin="anonymous"
     >
     <link
       rel="preload"
-      href="https://unpkg.com/tzf-wasm@1.0.1/tzf_wasm_bg.wasm"
+      href="https://unpkg.com/tzf-wasm@1.1.0/tzf_wasm_bg.wasm"
       as="fetch"
       crossorigin="anonymous"
       type="application/wasm"
@@ -159,7 +159,7 @@
     <script type="module">
       import init, {
         WasmFinder,
-      } from "https://unpkg.com/tzf-wasm@1.0.1/tzf_wasm.js";
+      } from "https://unpkg.com/tzf-wasm@1.1.0/tzf_wasm.js";
 
       // 定义一组视觉上区分度高的颜色
       const lightThemeColors = [
@@ -257,16 +257,14 @@
         }
 
         window.loadedTimezones.add(timezone);
-        const formattedTimezone = timezone.replace(/\//g, "-");
 
         try {
-          // 加载详细边界
-          const geojsonPath =
-            `./timezone-polygons/${formattedTimezone}.geojson`;
-          const response = await fetch(geojsonPath);
-          if (response.ok) {
-            const geojsonData = await response.json();
-            const timezoneColor = getTimezoneColor(timezone);
+          const timezoneColor = getTimezoneColor(timezone);
+
+          // 使用 WASM 方法获取详细边界 GeoJSON
+          const geojsonStr = window.finder.get_tz_geojson_from_polygonfinder(timezone);
+          if (geojsonStr) {
+            const geojsonData = JSON.parse(geojsonStr);
             const timezoneLayer = L.geoJSON(geojsonData, {
               style: {
                 color: timezoneColor,
@@ -279,13 +277,10 @@
             window.polygonLayers.set(timezone, timezoneLayer);
           }
 
-          // 加载索引边界
-          const indexGeojsonPath =
-            `./timezone-polygons-index/${formattedTimezone}.geojson`;
-          const indexResponse = await fetch(indexGeojsonPath);
-          if (indexResponse.ok) {
-            const indexGeojsonData = await indexResponse.json();
-            const timezoneColor = getTimezoneColor(timezone);
+          // 使用 WASM 方法获取索引边界 GeoJSON
+          const indexGeojsonStr = window.finder.get_tz_geojson_from_fuzzy(timezone);
+          if (indexGeojsonStr) {
+            const indexGeojsonData = JSON.parse(indexGeojsonStr);
             const indexTimezoneLayer = L.geoJSON(indexGeojsonData, {
               style: {
                 color: timezoneColor,
