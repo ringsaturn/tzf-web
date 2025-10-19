@@ -26,9 +26,3 @@ preview:
 
 typos:
 	@typos .
-
-gen-polygons:
-	@mkdir -p static/timezone-polygons
-	@mkdir -p static/timezone-polygons-index
-	@go run cmd/gen-tz-polygons/main.go -output static/timezone-polygons -type 0
-	@go run cmd/gen-tz-polygons/main.go -output static/timezone-polygons-index -type 1
