@@ -2,13 +2,10 @@ static/sitemap.xml: README.md LICENSE update_sitemap.sh
 	@./update_sitemap.sh
 
 fmt:
-	@deno fmt --ignore=dist
+	@deno fmt --ignore=dist static/
 
 check:
-	@deno fmt --check --ignore=dist
-
-lint:
-	@deno lint --ignore=dist
+	@deno fmt --check --ignore=dist static/
 
 artifact:
 	@mkdir -p dist
