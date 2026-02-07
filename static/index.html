@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://unpkg.com https://api.protomaps.com https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://api.protomaps.com https://unpkg.com; connect-src 'self' https://unpkg.com https://api.protomaps.com;"
+    >
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- <meta http-equiv="X-Frame-Options" content="DENY"> -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=self">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    >
+    <title>
+      tzf-web - Interactive Timezone Finder Map | Find Timezone by Location
+    </title>
+    <meta name="author" content="ringsaturn" />
+    <meta
+      name="keywords"
+      content="timezone finder, timezone map, interactive map, WebAssembly timezone, timezone lookup, geographic timezone, tzf, leaflet map, protomaps"
+    />
+    <meta
+      name="description"
+      content="Find the timezone of any location with our interactive map. Powered by a WebAssembly module for fast timezone lookups. Features include multiple markers, dark mode, and high-contrast accessibility options."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://ringsaturn.github.io/tzf-web/" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@ringsaturn_me" />
+    <meta
+      name="twitter:title"
+      content="Interactive Timezone Finder Map | tzf-web"
+    />
+    <meta
+      name="twitter:description"
+      content="Find the timezone of any location with our interactive map. Powered by WebAssembly for fast timezone lookups."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ringsaturn.github.io/tzf-web/android-chrome-512x512.png"
+    />
+
+    <meta property="og:url" content="https://ringsaturn.github.io/tzf-web/" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Interactive Timezone Finder Map | tzf-web"
+    />
+    <meta
+      property="og:image"
+      content="https://ringsaturn.github.io/tzf-web/android-chrome-512x512.png"
+    />
+    <meta
+      property="og:description"
+      content="Find the timezone of any location with our interactive map. Powered by WebAssembly for fast timezone lookups. Features include multiple markers, dark mode, and high-contrast accessibility options."
+    />
+    <meta property="og:site_name" content="tzf-web" />
+    <meta
+      name="google-site-verification"
+      content="56YBydpJAlvdsl_gIhxrt5ZyGApdYN9qSSbV2BTCVEg"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "tzf-web",
+        "url": "https://ringsaturn.github.io/tzf-web/",
+        "description": "An interactive web application for finding timezones by location on a map.",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "author": {
+          "@type": "Person",
+          "name": "ringsaturn",
+          "url": "https://github.com/ringsaturn"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "browserRequirements": "Requires WebAssembly support",
+        "featureList": [
+          "Interactive map interface",
+          "Multiple marker support",
+          "Dark mode and high contrast themes",
+          "WebAssembly-powered timezone lookup",
+          "Accessibility features"
+        ]
+      }
+    </script>
+
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicon-16x16.png"
+    />
+    <link rel="manifest" href="./site.webmanifest" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script
+      src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"
+    />
+    <script
+      src="https://unpkg.com/protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js"
+    ></script>
+    <script src="https://unpkg.com/fuse.js@7.1.0/dist/fuse.min.js"></script>
+
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://api.protomaps.com">
+    <link
+      rel="preload"
+      href="https://unpkg.com/tzf-wasm@1.1.3/tzf_wasm.js"
+      as="script"
+      crossorigin="anonymous"
+    >
+    <link
+      rel="preload"
+      href="https://unpkg.com/tzf-wasm@1.1.3/tzf_wasm_bg.wasm"
+      as="fetch"
+      crossorigin="anonymous"
+      type="application/wasm"
+    >
+    <link
+      rel="preload"
+      href="https://unpkg.com/leaflet/dist/leaflet.css"
+      as="style"
+    >
+    <link
+      rel="preload"
+      href="https://unpkg.com/leaflet/dist/leaflet.js"
+      as="script"
+    >
+
+    <script type="module" src="./assets/js/index.js"></script>
+
+    <link rel="stylesheet" href="./assets/css/index.css" />
+  </head>
+
+  <body>
+    <a href="#map" class="skip-nav">Skip to map</a>
+    <header class="visually-hidden">
+      <h1>Interactive Timezone Finder Map</h1>
+      <p>
+        Find the timezone of any location using our interactive
+        WebAssembly-powered map.
+      </p>
+    </header>
+
+    <div id="loading-overlay" role="alert" aria-live="polite">Loading...</div>
+    <div id="error-message" role="alert" aria-live="assertive"></div>
+
+    <main>
+      <div id="map" role="application" aria-label="Interactive timezone map">
+      </div>
+
+      <aside
+        id="coordinate-inputs"
+        class="panel"
+        role="complementary"
+        aria-label="Control panel"
+      >
+        <button
+          class="toggle-panel-button"
+          onclick="document.getElementById('coordinate-inputs').classList.toggle('expanded')"
+          aria-label="Toggle panel visibility"
+          title="Toggle panel visibility"
+        >
+        </button>
+
+        <section class="panel-section" aria-labelledby="coordinates-title">
+          <h2 id="coordinates-title" class="panel-section-title">
+            Coordinates
+          </h2>
+          <div class="input-group">
+            <label for="longitude">Lng:</label>
+            <input
+              type="number"
+              id="longitude"
+              name="longitude"
+              placeholder="e.g. -74.0060"
+              aria-label="Longitude"
+              step="0.0001"
+              min="-180"
+              max="180"
+              pattern="^-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180)(\.[0-9]{1,8})?$"
+              title="Enter a longitude value between -180 and 180 degrees"
+              autocomplete="off"
+            />
+            <small class="input-help">Valid range: -180° to 180°</small>
+          </div>
+          <div class="input-group">
+            <label for="latitude">Lat:</label>
+            <input
+              type="number"
+              id="latitude"
+              name="latitude"
+              placeholder="e.g. 40.7128"
+              aria-label="Latitude"
+              step="0.0001"
+              min="-90"
+              max="90"
+              pattern="^-?([0-8]?[0-9]|90)(\.[0-9]{1,8})?$"
+              title="Enter a latitude value between -90 and 90 degrees"
+              autocomplete="off"
+            />
+            <small class="input-help">Valid range: -90° to 90°</small>
+          </div>
+          <button
+            id="add-marker"
+            aria-label="Add marker at specified coordinates"
+          >
+            Add Marker
+          </button>
+        </section>
+
+        <section class="panel-section" aria-labelledby="city-search-title">
+          <h2 id="city-search-title" class="panel-section-title">
+            City Search
+          </h2>
+          <div class="input-group">
+            <input
+              type="text"
+              id="city-search"
+              name="city-search"
+              placeholder="Search for a city..."
+              aria-label="Search for a city"
+              autocomplete="off"
+            />
+          </div>
+          <div id="city-search-results" class="city-search-results"></div>
+        </section>
+
+        <section class="panel-section" aria-labelledby="marker-controls-title">
+          <h2 id="marker-controls-title" class="panel-section-title">
+            Marker Controls
+          </h2>
+          <div class="marker-controls">
+            <button
+              onclick="removeLastMarker()"
+              aria-label="Remove last marker"
+              title="Press Command+Z to remove last marker"
+            >
+              Undo Last (⌘Z)
+            </button>
+            <button
+              onclick="clearAllMarkers()"
+              aria-label="Clear all markers"
+              title="Press Command+Shift+Backspace to clear all markers"
+            >
+              Clear All (⌘⇧⌫)
+            </button>
+          </div>
+          <div class="controls-container">
+            <input
+              type="checkbox"
+              id="show-index-data"
+              class="toggle-switch"
+              onchange="toggleIndexData()"
+              aria-label="Toggle index data visibility"
+            />
+            <label for="show-index-data" class="toggle-label"
+            >Show Index Data</label>
+          </div>
+          <div class="controls-container">
+            <input
+              type="checkbox"
+              id="show-sun-illumination"
+              class="toggle-switch"
+              onchange="toggleSunIllumination()"
+              aria-label="Toggle sun illumination"
+            />
+            <label for="show-sun-illumination" class="toggle-label"
+            >Show Sun Illumination</label>
+          </div>
+        </section>
+
+        <section class="panel-section" aria-labelledby="share-title">
+          <h2 id="share-title" class="panel-section-title">Share</h2>
+          <button
+            id="share-button"
+            class="share-button"
+            aria-label="Share current view"
+            style="margin-bottom: 8px"
+          >
+            Share Current View
+          </button>
+          <!-- <button
+            id="share-image-button"
+            class="share-button"
+            aria-label="Share as image"
+          >
+            Share as Image
+          </button> -->
+        </section>
+
+        <section class="panel-section" aria-labelledby="appearance-title">
+          <h2 id="appearance-title" class="panel-section-title">Appearance</h2>
+          <div class="theme-controls">
+            <label for="theme-select">Theme:</label>
+            <select
+              id="theme-select"
+              onchange="toggleTheme(this.value)"
+              aria-label="Select theme"
+            >
+              <option value="auto">Auto (System)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </div>
+          <div class="theme-controls">
+            <label for="language-select">Language:</label>
+            <select
+              id="language-select"
+              onchange="updateMapLanguage(this.value)"
+              aria-label="Select language"
+            >
+              <option value="auto">Auto (System)</option>
+              <option value="en">English</option>
+              <option value="zh-Hans">简体中文</option>
+              <option value="zh-Hant">繁體中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="panel-section" aria-labelledby="help-title">
+          <h2 id="help-title" class="panel-section-title">Help</h2>
+          <button
+            class="help-button"
+            aria-label="Show keyboard shortcuts"
+            onclick="toggleShortcutsHelp()"
+          >
+            Keyboard Shortcuts
+          </button>
+          <div id="shortcuts-panel" class="shortcuts-content" hidden>
+            <ul>
+              <li>
+                <kbd>⌘</kbd> + <kbd>Z</kbd> - Remove last marker
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd> - Clear all markers
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>+</kbd> / <kbd>.</kbd> - Zoom in
+              </li>
+              <li>
+                <kbd>⌘</kbd> + <kbd>-</kbd> / <kbd>,</kbd> - Zoom out
+              </li>
+              <li>
+                <kbd>←</kbd>
+                <kbd>↑</kbd>
+                <kbd>→</kbd>
+                <kbd>↓</kbd> - Pan map
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel-section" aria-labelledby="links-title">
+          <h2 id="links-title" class="panel-section-title">Links</h2>
+          <nav class="links-section">
+            <ul>
+              <li>
+                <a
+                  href="https://ringsaturn.github.io/tzf-web/simple"
+                  target="_blank"
+                  rel="noopener"
+                >Simple Mode</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-web"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-web Source</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-wasm"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-wasm Library</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ringsaturn/tzf-rs"
+                  target="_blank"
+                  rel="noopener"
+                >tzf-rs Engine</a>
+              </li>
+            </ul>
+          </nav>
+        </section>
+      </aside>
+
+      <div id="mousecoord" class="panel" role="status" aria-live="polite"></div>
+    </main>
+
+    <footer>
+      <p>
+        &copy; 2024 tzf-web. Built with <a
+          href="https://github.com/evansiroky/timezone-boundary-builder"
+          target="_blank"
+          rel="noopener"
+        >timezone-boundary-builder</a>.
+      </p>
+    </footer>
+  </body>
+</html>

@@ -1,5 +1,4 @@
-.PHONY: sitemap.xml
-sitemap.xml:
+static/sitemap.xml: README.md LICENSE update_sitemap.sh
 	@./update_sitemap.sh
 
 fmt:
@@ -15,8 +14,6 @@ artifact:
 	@mkdir -p dist
 	@cp LICENSE dist/
 	@cp README.md dist/
-	@cp *.html dist/
-	@cp sitemap.xml dist/
 	@cp -r static/* dist
 
 preview:

@@ -1,5 +1,5 @@
 # Define arrays
-files=("index.html" "simple.html" "LICENSE" "README.md")
+files=("static/index.html" "static/simple.html" "LICENSE" "README.md")
 urls=(
     "https://ringsaturn.github.io/tzf-web/"
     "https://ringsaturn.github.io/tzf-web/simple"
@@ -10,7 +10,7 @@ changefreq=("weekly" "weekly" "yearly" "monthly")
 priority=("1.0" "0.8" "0.3" "0.5")
 
 # Create sitemap.xml
-cat > sitemap.xml << EOL
+cat > static/sitemap.xml << EOL
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 EOL
@@ -21,7 +21,7 @@ for i in "${!files[@]}"; do
     date=$(git log -1 --format=%cd --date=iso-strict "${files[$i]}")
     
     # Append URL entry to sitemap.xml
-    cat >> sitemap.xml << EOL
+    cat >> static/sitemap.xml << EOL
   <url>
     <loc>${urls[$i]}</loc>
     <lastmod>$date</lastmod>
@@ -32,7 +32,7 @@ EOL
 done
 
 # Close the XML file
-cat >> sitemap.xml << EOL
+cat >> static/sitemap.xml << EOL
 </urlset>
 EOL
 
