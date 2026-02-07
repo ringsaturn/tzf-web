@@ -1,0 +1,56 @@
+:root[data-theme="light"] {
+  --bg-color: white;
+  --text-color: #1a202c;
+  --panel-bg: white;
+  --panel-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --input-border: #e2e8f0;
+  --input-focus: #4299e1;
+  --button-bg: #4299e1;
+  --button-hover: #3182ce;
+  --share-button-bg: #48bb78;
+  --share-button-hover: #38a169;
+  --link-color: #2b6cb0;
+  --link-hover: #1a4971;
+  --error-bg: #feb2b2;
+  --error-text: #c53030;
+  --loading-bg: rgba(255, 255, 255, 0.9);
+  --loading-text: #1a202c;
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #1a202c;
+  --text-color: #e2e8f0;
+  --panel-bg: #2d3748;
+  --panel-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --input-border: #4a5568;
+  --input-focus: #4299e1;
+  --button-bg: #3182ce;
+  --button-hover: #2c5282;
+  --share-button-bg: #38a169;
+  --share-button-hover: #2f855a;
+  --link-color: #63b3ed;
+  --link-hover: #90cdf4;
+  --error-bg: #c53030;
+  --error-text: #fff;
+  --loading-bg: rgba(26, 32, 44, 0.9);
+  --loading-text: #e2e8f0;
+}
+
+:root[data-theme="high-contrast"] {
+  --bg-color: black;
+  --text-color: white;
+  --panel-bg: black;
+  --panel-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+  --input-border: white;
+  --input-focus: yellow;
+  --button-bg: white;
+  --button-hover: yellow;
+  --share-button-bg: white;
+  --share-button-hover: yellow;
+  --link-color: yellow;
+  --link-hover: #ffff00;
+  --error-bg: red;
+  --error-text: white;
+  --loading-bg: rgba(0, 0, 0, 0.9);
+  --loading-text: white;
+}
