@@ -34,4 +34,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         if: ${{ github.ref_name == 'main' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
