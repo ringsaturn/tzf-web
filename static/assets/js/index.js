@@ -1,4 +1,4 @@
-import init, { WasmFinder } from "https://unpkg.com/tzf-wasm@1.2.0/tzf_wasm.js";
+import init, { WasmFinder } from "https://unpkg.com/tzf-wasm@1.2.3/tzf_wasm.js";
 import {
   formatTime,
   getSolarTime,
